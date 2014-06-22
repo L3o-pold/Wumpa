@@ -1,0 +1,25 @@
+{
+    "name": "wumpa/wumpa",
+    "type": "project",
+    "description": "Home-made PHP micro-framework",
+    "homepage": "http://b-deluca.com",
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "Bastien de Luca",
+            "email": "dev@b-deluca.com",
+            "homepage": "http://b-deluca.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.2.4",
+        "twig/twig" : "dev-master",
+        "swiftmailer/swiftmailer" : "dev-master"
+    },
+    "autoload": {
+        "psr-0" : {
+            "Wumpa\\" : "vendor/wumpa/"
+        }
+    }
+}

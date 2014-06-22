@@ -1,0 +1,16 @@
+# OSX generated files/folders
+.DS_Store
+
+# Utility stuff
+composer.phar
+
+# vendor installed by composer
+vendor/twig
+vendor/swiftmailer
+vendor/composer
+vendor/autoload.php
+
+# Eclipse generated files/folders
+.buildpath
+.project
+.settings
