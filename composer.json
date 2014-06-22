@@ -2,13 +2,13 @@
     "name": "wumpa/wumpa",
     "type": "project",
     "description": "Home-made PHP micro-framework",
-    "homepage": "http://b-deluca.com",
+    "homepage": "http://de-luca.io",
     "license": "BSD-2-Clause",
     "authors": [
         {
             "name": "Bastien de Luca",
-            "email": "dev@b-deluca.com",
-            "homepage": "http://b-deluca.com",
+            "email": "dev@de-luca.io",
+            "homepage": "http://de-luca.io",
             "role": "Developer"
         }
     ],
