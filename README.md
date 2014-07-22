@@ -31,6 +31,7 @@ Wumpa provide some basic level features required to run your project such as:
 - -Console component for project initialisation- (in progress)
 - -Model class generator (database analyser)- (in progress)
 <br>
+
 As wheel already exists, Wumpa use some of the best PHP librairies: (Check their documentation to get started with these)
 - Twig for templating
 - Swiftmailer for mailing system
