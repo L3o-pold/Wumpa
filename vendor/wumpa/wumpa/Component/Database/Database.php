@@ -16,18 +16,36 @@ class Database {
 	private $driver;
 	private $dbName;
 	private $host;
+	private $port;
 	private $user;
 	private $password;
 	private $connec = null;
 	
 	private static $instance = null;
 	
-	private function __construct($driver, $dbName, $host, $user, $password) {
+	private function __construct($driver, $dbName, $host, $port, $user, $password) {
 		$this->setDriver($driver);
 		$this->setDbName($dbName);
 		$this->setHost($host);
 		$this->setUser($user);
+		$this->setPort($port);
 		$this->setPassword($password);
+	}
+	
+	protected function getConnectionString() {
+		$str = '';
+		switch( $this->getDriver() ) {
+			case 'mysql' : //mysql <==> pgsql
+			case 'pgsql' :
+				$str = $this->getDriver() . ':host=' . $this->getHost() . ( !is_null( $this->getPort() ) ? ';port=' . $this->getPort() : '' ) . ';dbname=' . $this->getDbName();
+				break;
+			case 'sqlsrv' :
+				$str =  $this->getDriver() . ':Server=' . $this->getHost() . ( !is_null( $this->getPort() ) ',' . $this->getPort() : '' ) . ';Database=' . $this->getDbName();
+				break;
+			default :
+				$str = 'Undefined driver : ' . $this->getDriver();
+		}
+		return $str;
 	}
 	
 	public function getDriver() {
@@ -58,6 +76,13 @@ class Database {
 		$this->user = $user;
 		return $this;
 	}
+	public function getPort() {
+		return $this->port;
+	}
+	public function setPort($port) {
+		$this->port = $port;
+		return $this;
+	}
 	public function getPassword() {
 		return $this->password;
 	}
@@ -76,7 +101,7 @@ class Database {
 	public static function init() {
 		if (!is_null(App::get(App::DB))) {
 			$data = require_once App::get(App::DB);
-			self::$instance = new self($data['driver'], $data['dbName'], $data['host'], $data['user'], $data['password']);
+			self::$instance = new self($data['driver'], $data['dbName'], $data['host'], $data['port'], $data['user'], $data['password']);
 		}
 	}
 	
@@ -92,8 +117,9 @@ class Database {
 		$db = self::get();
 		if(is_null($db->getConnec())) {
 			try {
-				$dbh = new \PDO($db->getDriver() .':dbname='. $db->getDbName() .';host='. $db->getHost(), $db->getUser(), $db->getPassword());
+				$dbh = new \PDO($db->getConnectionString(), $db->getUser(), $db->getPassword());
 				$dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+				$dbh->exec('SET CHARACTER SET utf8');
 			} catch (PDOException $e) {
 				echo "cake";
 			}
