@@ -14,8 +14,8 @@
     ],
     "require": {
         "php": ">=5.2.4",
-        "twig/twig" : "dev-master",
-        "swiftmailer/swiftmailer" : "dev-master"
+        "twig/twig": "1.16.*@dev",
+        "swiftmailer/swiftmailer": "5.3.*@dev"
     },
     "autoload": {
         "psr-0" : {

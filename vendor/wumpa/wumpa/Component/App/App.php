@@ -7,9 +7,11 @@ use Wumpa\Component\Exception\Exception\InvalidArgumentException;
 use Wumpa\Component\Exception\Exception\IllegalMethodCall;
 use Wumpa\Component\Exception\Exception\FileNotFoundException;
 use Wumpa\Component\Database\Database;
+use Wumpa\Component\Autoloader\Loader;
 use Wumpa\Component\Routing\Router;
 use Wumpa\Component\Exception\Exception\ConfigErrorException;
 use Wumpa\Component\Exception\ExceptionHandler;
+use Wumpa\Component\Autoloader\Autoloader;
 
 /**
  * This define the application by describing it's execution environment.
@@ -38,6 +40,7 @@ class App {
 	private $viewDir;
 	private $templatesDir;
 	private $displayTrace;
+	private $wumpaExcpHandle;
 
 	private static $instance;
 
@@ -319,6 +322,7 @@ class App {
 
 	public static function run() {
 		Database::init();
+		Autoloader::register();
 		Router::init();
 	}
 

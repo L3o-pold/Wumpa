@@ -26,13 +26,14 @@ Wumpa provide some basic level features required to run your project such as:
 - Flexible routing system (with request validation)
 - Database management system (MySQL or PgSQL)
 - Exception handler
-- -AES encryption system- (in progress)
+- Console component for project initialisation
+- -Some encryption tools- (in progress)
 - -File management- (in progress)
-- -Console component for project initialisation- (in progress)
 - -Model class generator (database analyser)- (in progress)
 <br>
 
 As wheel already exists, Wumpa use some of the best PHP librairies: (Check their documentation to get started with these)
+- PDO in order to query database
 - Twig for templating
 - Swiftmailer for mailing system
 - Composer autoloading
