@@ -7,6 +7,7 @@
 
 use Wumpa\Component\App\App;
 
+session_start();
 
 $call_dir = dirname(debug_backtrace()[0]['file'])."/";
 
