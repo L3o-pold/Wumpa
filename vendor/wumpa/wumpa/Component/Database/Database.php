@@ -83,13 +83,6 @@ class Database {
 		$this->user = $user;
 		return $this;
 	}
-	public function getPort() {
-		return $this->port;
-	}
-	public function setPort($port) {
-		$this->port = $port;
-		return $this;
-	}
 	public function getPassword() {
 		return $this->password;
 	}
