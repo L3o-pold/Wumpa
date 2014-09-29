@@ -12,7 +12,7 @@ use Wumpa\Component\Routing\Router;
 use Wumpa\Component\Exception\Exception\ConfigErrorException;
 use Wumpa\Component\Exception\ExceptionHandler;
 use Wumpa\Component\Autoloader\Autoloader;
-use Wumpa\Component\Box\Box;
+use Wumpa\Component\Crate\Crate;
 
 /**
  * This define the application by describing it's execution environment.
@@ -324,7 +324,7 @@ class App {
 	public static function run() {
 		Database::init();
 		Autoloader::register();
-		Box::init();
+		Crate::init();
 		Router::init();
 	}
 

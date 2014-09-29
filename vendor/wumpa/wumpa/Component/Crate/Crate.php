@@ -1,8 +1,8 @@
 <?php
 
-namespace Wumpa\Component\Box;
+namespace Wumpa\Component\Crate;
 
-class Box {
+class Crate {
 
     private $storage = array();
 
@@ -18,35 +18,35 @@ class Box {
     }
 
     public static function init() {
-        if(isset($_SESSION['~Box'])) {
+        if(isset($_SESSION['~Crate'])) {
             return false;
         } else {
-            $box = new self();
-            $box = serialize($box);
-            $_SESSION['~Box'] = $box;
+            $crate = new self();
+            $crate = serialize($crate);
+            $_SESSION['~Crate'] = $crate;
             return true;
         }
     }
 
     public static function store($nameTag, $item, $expire = false) {
-        $box = $_SESSION['~Box'];
-        $box = unserialize($box);
-        $storage = $box->getStorage();
+        $crate = $_SESSION['~Crate'];
+        $crate = unserialize($crate);
+        $storage = $crate->getStorage();
 
         $storage[$nameTag] = array(
             'item' => $item,
             'expire' => $expire
         );
         
-        $box->setStorage($storage);
-        $box = serialize($box);
-        $_SESSION['~Box'] = $box;
+        $crate->setStorage($storage);
+        $crate = serialize($crate);
+        $_SESSION['~Crate'] = $crate;
     }
 
     public static function get($nameTag) {
-        $box = $_SESSION['~Box'];
-        $box = unserialize($box);
-        $storage = $box->getStorage();
+        $crate = $_SESSION['~Crate'];
+        $crate = unserialize($crate);
+        $storage = $crate->getStorage();
 
         if(!isset($storage[$nameTag])) {
             return false;
@@ -59,9 +59,9 @@ class Box {
             unset($storage[$nameTag]);
         }
         
-        $box->setStorage($storage);
-        $box = serialize($box);
-        $_SESSION['~Box'] = $box;
+        $crate->setStorage($storage);
+        $crate = serialize($crate);
+        $_SESSION['~Crate'] = $crate;
         
         return $item['item'];
     }
