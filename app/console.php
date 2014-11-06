@@ -16,8 +16,13 @@ if(isset($argv[1])) {
 			$component = new ProjectSetup();
 			$component->launch();
 			break;
+		case "-db":
+			$component = new DbSetup();
+			$component->launch();
+			break;
 		case "-model":
-			echo "Not implemented yet...";
+			$component = new ModelSetup();
+			$component->launch();
 			break;
 		default:
 			ConsoleDisplay::displayArgsError($argv[1]);

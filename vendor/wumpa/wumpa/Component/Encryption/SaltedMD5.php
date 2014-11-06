@@ -3,10 +3,13 @@
 namespace Wumpa\Component\Encryption;
 
 /**
- * This class offer a way to encrypt data using MD5 salted.
+ * This class offer a way to encrypt data using MD5 and a salt.
  * Encrypted data will be like: SALT:DATA
  *
- * It can be used to encrypt password.
+ * As MD5 (and SHA1) are weak, you should use other way to hash password
+ * Such as PHP5.5 password hashing.
+ * 
+ * Use it at your own risks.
  */
 class SaltedMD5 {
 
@@ -21,7 +24,7 @@ class SaltedMD5 {
     }
 
     public static function isSame($encryptedData, $dataToTest) {
-        $part = explode(":", $encryptadData);
+        $part = explode(":", $encryptedData);
         $salt = $part[0];
 
         if(md5($salt.$dataToTest) == $part[1]) {

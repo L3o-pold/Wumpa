@@ -43,7 +43,7 @@ class App {
 	private $displayTrace;
 	private $wumpaExcpHandle;
 
-	private static $instance;
+	private static $instance = null;
 
 	private function __construct($indexDir) {
 		if(file_exists($indexDir)) {

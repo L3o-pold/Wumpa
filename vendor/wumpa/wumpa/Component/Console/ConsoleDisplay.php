@@ -18,6 +18,7 @@ class ConsoleDisplay {
 		echo "\n";
 		echo "   -help      Display this help\n";
 		echo "   -new       Run project setup\n";
+		echo "   -db        Run database setup\n";
 		echo "   -model     Run model generator\n";
 	}
 	

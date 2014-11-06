@@ -1,27 +1,19 @@
 <?php
 
-namespace Wumpa\Component\File;
+namespace Wumpa\Component\FileSystem;
 
-class File {
+class File extends FSObject {
 	
 	const CREATE = "create";
 	const ADD = "add";
 	
-	private $filename;
 	private $resource = null;
 	private $openMode = null;
 	
 	public function __construct($filename) {
-		$this->setFilename($filename);
+		parent::__construct($filename);
 	}
 	
-	public function getFilename() {
-		return $this->filename;
-	}
-	public function setFilename($filename) {
-		$this->filename = $filename;
-		return $this;
-	}
 	public function getResource() {
 		return $this->resource;
 	}
@@ -41,11 +33,11 @@ class File {
 		if(is_null($this->getResource()) && is_null($this->getOpenMode())) {
 			switch($mode) {
 				case "create":
-					$this->setResource(fopen($this->getFilename(), "w+"));
+					$this->setResource(fopen($this->getName(), "w+"));
 					$this->setOpenMode($mode);
 					break;
 				case "add":
-					$this->setResource(fopen($this->getFilename(), "a+"));
+					$this->setResource(fopen($this->getName(), "a+"));
 					$this->setOpenMode($mode);
 					break;
 				default:

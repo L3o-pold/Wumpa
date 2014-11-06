@@ -4,6 +4,11 @@ namespace Wumpa\Component\Autoloader;
 
 use Wumpa\Component\App\App;
 
+/**
+ * This class offers transparent autoloading for user definined class in projects.
+ * 
+ * @author Bastien de Luca
+ */
 class Autoloader {
 	
 	public function load($class_name) {

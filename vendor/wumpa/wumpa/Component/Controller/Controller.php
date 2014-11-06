@@ -32,7 +32,7 @@ class Controller {
 	
 	public function render($template, $data = array()) {
 		$data['asset'] = $this->getAsset();
-		\Twig_Autoloader::register();
+		//\Twig_Autoloader::register();
 		$loader = new \Twig_Loader_Filesystem($this->getTemplateDir());
 		$twig = new \Twig_Environment($loader);
 		echo $twig->render($template, $data);

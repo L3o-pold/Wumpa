@@ -3,6 +3,7 @@
 namespace Wumpa\Component\Database;
 
 use Wumpa\Component\App\App;
+use Wumpa\Component\App\ConsoleApp;
 
 /**
  * Handle the database used by the framework
@@ -31,7 +32,7 @@ class Database {
 		$this->setPort($port);
 		$this->setPassword($password);
 	}
-	
+
 	public function getConnectionString() {
 		$str = '';
 		switch( $this->getDriver() ) {
@@ -92,24 +93,29 @@ class Database {
 	}
 
 	public static function init() {
-		if (!is_null(App::get(App::DB))) {
-			$data = require_once App::get(App::DB);
-			self::$instance = new self($data['driver'], $data['dbName'], $data['host'], $data['port'], $data['user'], $data['password']);
+		$calledFrom = substr(debug_backtrace()[0]['file'], strrpos(debug_backtrace()[0]['file'], "/")+1);
+		if($calledFrom == "App.php") {
+			if (!is_null(App::get(App::DB))) {
+				$data = require_once App::get(App::DB);
+				self::$instance = new self($data['driver'], $data['dbName'], $data['host'], $data['port'], $data['user'], $data['password']);
+			}
+		} else if($calledFrom == "ConsoleApp.php") {
+			if (!is_null(ConsoleApp::get(ConsoleApp::DB))) {
+				if(!is_null($data = require_once ConsoleApp::get(ConsoleApp::DB))) {
+					self::$instance = new self($data['driver'], $data['dbName'], $data['host'], $data['port'], $data['user'], $data['password']);
+				}
+			}
 		}
 	}
 
 	public static function get() {
-		if (!is_null(self::$instance)) {
-			return self::$instance;
-		} else {
-			return false;
-		}
+		return self::$instance;
 	}
 
 	/**
 	 * This function changed as connexion is not stored in this class anymore
 	 * May change in the future as it only use PDO right now.
-	 * 
+	 *
 	 * @return \Wumpa\Component\Database\DBHandler
 	 */
 	public static function connect() {
