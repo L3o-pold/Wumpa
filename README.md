@@ -16,7 +16,7 @@ I started to work on this project in order to build myself a micro framework tha
 This framework follows some PHP standards such as PSR-0 autoloading and use some very neat tools for PHP development like [Composer](https://getcomposer.org "Composer").
 
 2) Installation
-----------------------------------
+-----
 In order to get started you just need to get the sources.
 
 The easiest way is to use Composer.
@@ -26,7 +26,7 @@ The easiest way is to use Composer.
 You can also download the sources from the [GitHub repo](https://github.com/4nthrx/wumpa "Wumpa repo on GitHub").
 
 3) Features
-----------------------------------
+-----
 Wumpa provide some basic level features required to run your project such as:
 - Flexible routing system (with request validation)
 - Database management system (MySQL or PgSQL)
@@ -41,3 +41,8 @@ Wumpa use some of the best PHP librairies: (Check their documentation to get sta
 - Twig for templating
 - Swiftmailer for mailing system
 - Composer autoloading
+
+4) Todo list
+-----
+- MySQL database analyzer
+- (Error Handling)
