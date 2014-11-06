@@ -3,21 +3,21 @@
 use Wumpa\Component\Model\Model;
 
 class {{ className }} extends Model {
-	
-	{% for col in columns %}
+
+{% for col in columns %}
 	public {{ col }};
-	{% endfor %}
-	
-	public static function getPK() {
+{% endfor %}
+
+	public static function getPrimaries() {
 		return array(
-			{% for pk in primaries %}
-			{{ pk }},
-			{% endfor %}
+{% for pk in primaries %}
+			"{{ pk }}",
+{% endfor %}
 		);
 	}
-	
+
 	public static function getTableName() {
 		return "{{ tableName }}";
 	}
-	
+
 }

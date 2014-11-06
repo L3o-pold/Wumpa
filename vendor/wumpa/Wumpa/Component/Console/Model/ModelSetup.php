@@ -31,10 +31,12 @@ class ModelSetup extends ComponentMom {
 					echo "Path cannot be null.\n";
 				}
 			} while($projectPath == "");
+
+			if(substr($projectPath, strlen($projectPath)-1, 1) != "/")
+				$projectPath .= "/";
+
 			$this->setProjectPath($projectPath);
 		}
-
-		// NEED TO CHECK IF PATH END WITH "/"
 
 		ConsoleApp::init($this->getProjectPath());
 		ConsoleApp::run();
@@ -75,7 +77,7 @@ class ModelSetup extends ComponentMom {
 				continue;
 			}
 
-			echo "Table Found\n";
+			echo "\033[32;1mTable Found\033[0m\n";
 			$className = readline("Enter the name you want to give to the generated class:\n");
 			echo "Generating class ".$className.".php...";
 			$this->generateModel($selectedTable, $className);

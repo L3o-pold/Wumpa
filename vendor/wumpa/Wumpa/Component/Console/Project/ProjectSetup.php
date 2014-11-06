@@ -31,9 +31,8 @@ class ProjectSetup extends ComponentMom {
 		} while($path == "");
 
 		if(substr($path, strlen($path)-1, 1) != "/")
-			$path .= "/";//substr($path, 0, strlen($path)-1);
+			$path .= "/";
 
-		//$projectPath = $path."/".$name;
 		$this->setProjectPath($path.$name."/");
 
 

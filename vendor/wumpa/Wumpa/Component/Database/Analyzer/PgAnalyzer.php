@@ -18,35 +18,27 @@ class PgAnalyzer implements AnalyzerInterface {
 
 		$tables = array();
 		$sth = $dbh->query($sql);
-		while($res = $sth->fetch(PDO::FETCH_ASSOC)) {
-			var_dump($res);
+		while($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
+			$tables[] = $res["table_name"];
 		}
-		/*
+
 		$dbh = null;
 		return $tables;
-		*/
 	}
 
 	public function getColumns($table) {
 		$dbh = Database::connect();
 
 		$sql = "
-			select column_name, data_type, is_nullable, column_default, character_maximum_length, numeric_precision
+			select column_name
 			from information_schema.columns
 			where table_name like '".$table."'
 		";
 
 		$cols = array();
-
-		foreach ($dbh->query($sql) as $row) {
-			$cols[] = array(
-				"column_name" => $row['column_name'],
-				"data_type" => $row['data_type'],
-				"is_nullable" => $row['is_nullable'],
-				"column_default" => $row['column_default'],
-				"character_maximum_length" => $row['character_maximum_length'],
-				"numeric_precision" => $row['numeric_precision'],
-			);
+		$sth = $dbh->query($sql);
+		while ($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
+			$cols[] = $res["column_name"];
 		}
 
 		$dbh = null;
@@ -70,9 +62,9 @@ class PgAnalyzer implements AnalyzerInterface {
 		";
 
 		$cols = array();
-
-		foreach ($dbh->query($sql) as $row) {
-			$cols[] = $row["attname"];
+		$sth = $dbh->query($sql);
+		while ($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
+			$cols[] = $res["attname"];
 		}
 
 		$dbh = null;

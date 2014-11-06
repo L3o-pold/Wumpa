@@ -32,6 +32,10 @@ class DbSetup extends ComponentMom {
 					echo "Path cannot be null.\n";
 				}
 			} while($projectPath == "");
+
+			if(substr($projectPath, strlen($projectPath)-1, 1) != "/")
+				$projectPath .= "/";
+
 			$this->setProjectPath($projectPath);
 		}
 
@@ -81,7 +85,7 @@ class DbSetup extends ComponentMom {
 
 		$this->generateFile($data);
 		echo "\n";
-		echo "\033[32;1mDatabase configuration is now done!\033[0m\n";	
+		echo "\033[32;1mDatabase configuration is now done!\033[0m\n";
 
 	}
 
