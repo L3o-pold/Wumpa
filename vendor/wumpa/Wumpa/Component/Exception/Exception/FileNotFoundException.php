@@ -2,6 +2,10 @@
 
 namespace Wumpa\Component\Exception\Exception;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class FileNotFoundException extends \Exception {
 
 	private $file;
@@ -14,6 +18,7 @@ class FileNotFoundException extends \Exception {
 	public function getFile() {
 		return $this->file;
 	}
+	
 	public function setFile($file) {
 		$this->file = $file;
 		return $this;

@@ -2,6 +2,10 @@
 
 namespace Wumpa\Component\Exception\Exception;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class DirectoryNotFoundException extends \Exception {
 
 	private $directory;
@@ -14,6 +18,7 @@ class DirectoryNotFoundException extends \Exception {
 	public function getDirectory() {
 		return $this->directory;
 	}
+	
 	public function setDirectory($directory) {
 		$this->directory = $directory;
 		return $this;

@@ -2,24 +2,25 @@
 
 namespace Wumpa\Component\Autoloader;
 
-use Wumpa\Component\App\App;
-
 /**
- * This class offers transparent autoloading for user definined class in projects.
- * 
- * @author Bastien de Luca
+ * Provide a transparent class autoloader for user defined class in its
+ * project.
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
  */
 class Autoloader {
-	
+
+	private $app;
+
 	public function load($class_name) {
 		$dirs = array(
-			App::get(App::INDEX),
-			App::get(App::CONTROLLER),
-			App::get(App::MODEL),
-			App::get(App::VIEW),
-			App::get(App::TEMPLATES),
+			$this->getApp()->getIndexDir(),
+			$this->getApp()->getControllerDir(),
+			$this->getApp()->getModelDir(),
+			$this->getApp()->getViewDir(),
+			$this->getApp()->getTemplatesDir(),
 		);
-		
+
 		foreach($dirs as $dir) {
 			if(file_exists($dir.$class_name . '.php')) {
 				require_once($dir.$class_name . '.php');
@@ -27,13 +28,26 @@ class Autoloader {
 			}
 		}
 	}
-	
-	public static function register() {
-		spl_autoload_register(array(new self(), 'load'));
+
+	public function register() {
+		spl_autoload_register(array($this, 'load'));
 	}
-	
-	public static function unregister() {
-		spl_autoload_unregister(array(new self(), 'load'));
+
+	public function unregister() {
+		spl_autoload_unregister(array($this, 'load'));
 	}
-	
+
+	public function __construct($app) {
+		$this->setApp($app);
+	}
+
+	public function getApp() {
+		return $this->app;
+	}
+
+	public function setApp($app) {
+		$this->app = $app;
+		return $this;
+	}
+
 }

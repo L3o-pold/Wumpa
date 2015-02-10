@@ -7,11 +7,15 @@ use Wumpa\Component\FileSystem\File;
 use Wumpa\Component\Console\ComponentMom;
 use Wumpa\Component\Renderer\Renderer;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class ProjectSetup extends ComponentMom {
 
 	public function launch() {
 		$this->clear();
-		echo "Wumpa Model Generator started...\n";
+		echo "\033[1mWumpa Model Generator started...\033[0m\n";
 		echo "This will generate a new project in desired directory.\n";
 		echo "(relative paths are from the directory containing the Wumpa folder)\n";
 		echo "\n";
@@ -37,7 +41,7 @@ class ProjectSetup extends ComponentMom {
 
 
 		echo "\nCreating ".$this->getProjectPath()." Directory... ";
-		mkdir($this->getProjectPath());
+		mkdir($this->setProjectPath());
 		echo "\033[32;1mDone.\033[0m\n";
 
 		echo "Generating project structure... ";
@@ -72,11 +76,11 @@ class ProjectSetup extends ComponentMom {
 	}
 
 	private function generateStructure() {
-		mkdir($this->getProjectPath()."config");
-		mkdir($this->getProjectPath()."controller");
-		mkdir($this->getProjectPath()."model");
-		mkdir($this->getProjectPath()."view");
-		mkdir($this->getProjectPath()."view/templates");
+		mkdir($this->projectPath."config");
+		mkdir($this->projectPath."controller");
+		mkdir($this->projectPath."model");
+		mkdir($this->projectPath."view");
+		mkdir($this->projectPath."view/templates");
 	}
 
 	private function generateFiles() {

@@ -2,12 +2,16 @@
 
 namespace Wumpa\Component\Database\Analyzer;
 
-use Wumpa\Component\Database\Database;
+use Wumpa\Component\App\App;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class PgAnalyzer implements AnalyzerInterface {
 
 	public function getTables() {
-		$dbh = Database::connect();
+		$dbh = App::getDatabase()->connect();
 
 		$sql = "
 			select table_name
@@ -27,7 +31,7 @@ class PgAnalyzer implements AnalyzerInterface {
 	}
 
 	public function getColumns($table) {
-		$dbh = Database::connect();
+		$dbh = App::getDatabase()->connect();
 
 		$sql = "
 			select column_name
@@ -46,7 +50,7 @@ class PgAnalyzer implements AnalyzerInterface {
 	}
 
 	public function getPrimaries($table) {
-		$dbh = Database::connect();
+		$dbh = App::getDatabase()->connect();
 
 		$sql = "
 			SELECT

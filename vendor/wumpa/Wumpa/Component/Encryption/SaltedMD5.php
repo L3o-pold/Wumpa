@@ -8,8 +8,10 @@ namespace Wumpa\Component\Encryption;
  *
  * As MD5 (and SHA1) are weak, you should use other way to hash password
  * Such as PHP5.5 password hashing.
- * 
+ *
  * Use it at your own risks.
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
  */
 class SaltedMD5 {
 
@@ -17,7 +19,6 @@ class SaltedMD5 {
     const ALPHA = 1;
     const NUM = 2;
     const CUSTOM = 3;
-
 
     public static function crypt($dataToEncrypt, $salt) {
         return $salt.":".md5($salt.$dataToEncrypt);

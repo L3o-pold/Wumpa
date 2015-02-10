@@ -2,6 +2,10 @@
 
 namespace Wumpa\Component\Exception\Exception;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class RoutingException extends \Exception {
 
 	private $request;
@@ -14,6 +18,7 @@ class RoutingException extends \Exception {
 	public function getRequest() {
 		return $this->request;
 	}
+	
 	public function setRequest($request) {
 		$this->request = $request;
 		return $this;

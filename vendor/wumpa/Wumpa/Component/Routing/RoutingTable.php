@@ -2,38 +2,35 @@
 
 namespace Wumpa\Component\Routing;
 
+/**
+ * Define an iterable table containing the routes of the project.
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class RoutingTable implements \Iterator {
-	
+
 	private $routes = array();
-	
-	public function getRoutes() {
-		return $this->routes;
-	}
-	public function setRoutes($routes) {
-		$this->routes = $routes;
-		return $this;
-	}
-	
+
 	function rewind() {
 		$this->position = 0;
 	}
-	
+
 	function current() {
 		return $this->routes[$this->position];
 	}
-	
+
 	function key() {
 		return $this->position;
 	}
-	
+
 	function next() {
 		++$this->position;
 	}
-	
+
 	function valid() {
 		return isset($this->routes[$this->position]);
 	}
-	
+
 	public function add($route) {
 		foreach ($this->getRoutes() as $r) {
 			if($r->getName() == $route->getName()) {
@@ -42,7 +39,7 @@ class RoutingTable implements \Iterator {
 		}
 		$this->routes[] = $route;
 	}
-	
+
 	public function remove($routeName) {
 		foreach ($this->getRoutes() as $key => $r) {
 			if($r->getName() == $routeName) {
@@ -52,13 +49,14 @@ class RoutingTable implements \Iterator {
 		}
 		return false;
 	}
-	
-	public function merge($routingTable, $overwrite = true) {
-		foreach ($this->getRoutes() as $key => $r) {
-			foreach ($routingTable as $route) {
-				
-			}
-		}
+
+	public function getRoutes() {
+		return $this->routes;
 	}
-	
+
+	public function setRoutes($routes) {
+		$this->routes = $routes;
+		return $this;
+	}
+
 }

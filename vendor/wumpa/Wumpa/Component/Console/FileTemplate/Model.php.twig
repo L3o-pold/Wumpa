@@ -5,7 +5,7 @@ use Wumpa\Component\Model\Model;
 class {{ className }} extends Model {
 
 {% for col in columns %}
-	public {{ col }};
+	public ${{ col }};
 {% endfor %}
 
 	public static function getPrimaries() {

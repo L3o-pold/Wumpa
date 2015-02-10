@@ -2,66 +2,236 @@
 
 namespace Wumpa\Component\Model;
 
-use Wumpa\Component\Database\Database;
+use Wumpa\Component\App\App;
 
+/**
+ * Provide query methodes for model classes.
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 abstract class Model implements ModelInterface {
+
+	const ASC = "ASC";
+	const DESC = "DESC";
+
+	const LIKE = "LIKE";
+	const NOTLIKE = "NOT LIKE";
+
+	const IN = "IN";
+	const NIN = "NOT IN";
+
+	const EQ = "=";
+	const NEQ = "<>";
+	const GT = ">";
+	const LT = "<";
+	const GOET = ">=";
+	const LOET = "<=";
+
 
 	/**
 	 * Get all rows of the table and return them in an array of objects
+	 * Restrictions are not allowed in this function (use getByCols instead)
+	 * ORDER BY is possible and facultative, just specify a array like:
+	 * array(
+	 *     "columnToOrder" => "way (ASC or DESC)",
+	 *     "columnToOrder" => "way (ASC or DESC)"
+	 * );
+	 * It is also possible to define a limit and offset.
+	 *
 	 * @return multitype:unknown
 	 */
-	public function getAll() {
-		$dbh = Database::connect();
+	public function getAll(array $orders = null, $limit = null, $offset = null) {
+		$dbh = App::getDatabase()->connect();
 
-		$sth = $dbh->query("
-    		SELECT *
-    		FROM ".$this::getTableName()
-    	);
+		$query = "
+			SELECT *
+			FROM ".$this::getTableName();
+
+		if(!is_null($orders)) {
+			$query .= "\nORDER BY ";
+			$first = true;
+			foreach($orders as $col => $way) {
+				if($first) {
+					$query .= $col ." ". $way;
+					$first = false;
+				} else {
+					$query .= ", ".$col." ".$way;
+				}
+			}
+		}
+
+		if(!is_null($limit))
+			$query .= "\nLIMIT ".$limit;
+
+		if(!is_null($offset))
+			$query .= "\nOFFSET ".$offset;
+
+
+		$sth = $dbh->query($query);
 
 		$data = array();
 		while($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
 			$item = new $this();
-			foreach($res as $key=>$val) {
+			foreach($res as $key => $val) {
 				$item->$key = $val;
 			}
 			$data[] = $item;
 		}
 
 		$dbh = null;
+
 		return $data;
 	}
+
+	/**
+	 * Allow to count elements in a table
+	 * Restrictions are facultative.
+	 */
+	public function count(array $ands = null, array $ors = null) {
+		$dbh = App::getDatabase()->connect();
+
+		$query = "
+			SELECT COUNT(*)
+			FROM ".$this::getTableName();
+
+		$firstLine = !is_null($ands) || !is_null($ors);
+
+		if(!is_null($ands)) {
+			foreach($ands as $col => $and) {
+				if($firstLine) {
+					$query .= "\nWHERE ".$col." ".$and['operator']." '".$and['value']."'";
+					$firstLine = false;
+				} else {
+					$query .= "\AND ".$col." ".$and['operator']." '".$and['value']."'";
+				}
+			}
+		}
+
+		if(!is_null($ors)) {
+			foreach($ors as $col => $or) {
+				if($firstLine) {
+					$query .= "\nWHERE ".$col." ".$or['operator']." '".$or['value']."'";
+					$firstLine = false;
+				} else {
+					$query .= "\nOR ".$col." ".$or['operator']." '".$or['value']."'";
+				}
+			}
+		}
+
+		$sth = $dbh->query($query);
+		$data = $sth->fetch(\PDO::FETCH_ASSOC)['count'];
+
+		$dbh = null;
+
+		return $data;
+	}
+
 	/**
 	 * Attempt to get a single element in the database and put its data in the current object
 	 * Null data are returned if nothing is found
+	 *
 	 * @param unknown $id
 	 * @return \Wumpa\Component\Model\Model
 	 */
-	public function getById($id) {
-		$dbh = Database::connect();
+	public function getById(array $id) {
+		$dbh = App::getDatabase()->connect();
 
 		$query = "
     		SELECT *
     		FROM ".$this::getTableName()
     	;
-		$where = true;
+
+		$firstLine = true;
 		foreach($this::getPrimaries() as $pk) {
-			if($where) {
+			if($firstLine) {
 				$query .= "\nWHERE ".$pk." = '".$id[$pk]."'";
-				$where = false;
+				$firstLine = false;
 			} else {
 				$query .= "\nAND ".$pk." = '".$id[$pk]."'";
 			}
 		}
 
 		$sth = $dbh->query($query);
-		while($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
-			foreach($res as $key=>$val) {
-				$this->$key = $val;
-			}
+		$res = $sth->fetch(\PDO::FETCH_ASSOC);
+
+		foreach($res as $key=>$val) {
+			$this->$key = $val;
 		}
 
 		$dbh = null;
 		return $this;
+	}
+
+	/**
+	 *
+	 *
+	 */
+	public function getByCols(array $ands = null, array $ors = null, array $orders = null, $limit = null, $offset = null) {
+		$dbh = App::getDatabase()->connect();
+
+		$query = "
+			SELECT *
+			FROM " .$this::getTableName()
+		;
+
+		$firstLine = (!is_null($ands)) || (!is_null($ors));
+
+		if(!is_null($ands)) {
+			foreach($ands as $col => $and) {
+				if($firstLine) {
+					$query .= "\nWHERE ".$col." ".$and['operator']." '".$and['value']."'";
+					$firstLine = false;
+				} else {
+					$query .= "\AND ".$col." ".$and['operator']." '".$and['value']."'";
+				}
+			}
+		}
+
+		if(!is_null($ors)) {
+			foreach($ors as $col => $or) {
+				if($firstLine) {
+					$query .= "\nWHERE ".$col." ".$or['operator']." '".$or['value']."'";
+					$firstLine = false;
+				} else {
+					$query .= "\nOR ".$col." ".$or['operator']." '".$or['value']."'";
+				}
+			}
+		}
+
+		if(!is_null($orders)) {
+			$query .= "\nORDER BY ";
+			$first = true;
+			foreach($orders as $col => $way) {
+				if($first) {
+					$query .= $col ." ". $way;
+					$first = false;
+				} else {
+					$query .= ", ".$col." ".$way;
+				}
+			}
+		}
+
+		if(!is_null($limit))
+		$query .= "\nLIMIT ".$limit;
+
+		if(!is_null($offset))
+		$query .= "\nOFFSET ".$offset;
+
+
+		$sth = $dbh->query($query);
+
+		$data = array();
+		while($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
+			$item = new $this();
+			foreach($res as $key => $val) {
+				$item->$key = $val;
+			}
+			$data[] = $item;
+		}
+
+		$dbh = null;
+
+		return $data;
 	}
 
 	/**
@@ -70,7 +240,7 @@ abstract class Model implements ModelInterface {
 	 * @return number
 	 */
 	public function store() {
-		$dbh = Database::connect();
+		$dbh = App::getDatabase()->connect();
 
 		$query = "
 			INSERT INTO ".$this->getTableName()."
@@ -78,13 +248,21 @@ abstract class Model implements ModelInterface {
 		$first = true;
 		foreach ($this as $val) {
 			if($first) {
-				$query .= "'".$val."'";
+				if(is_null($val))
+					$query .= "default";
+				else
+					$query .= "'".$val."'";
+
 				$first = false;
 			} else {
-				$query .= ", '".$val."'";
+				if(is_null($val))
+					$query .= ", default";
+				else
+					$query .= ", '".$val."'";
 			}
 		}
 		$query .= ")";
+
 
 		$res = $dbh->exec($query);
 		$dbh = null;
@@ -97,7 +275,7 @@ abstract class Model implements ModelInterface {
 	 * @return number
 	 */
 	public function update() {
-		$dbh = Database::connect();
+		$dbh = App::getDatabase()->connect();
 
 		$query = "UPDATE ".$this->getTableName()."
 				SET ";
@@ -134,7 +312,7 @@ abstract class Model implements ModelInterface {
 	 * @return number
 	 */
 	public function delete() {
-		$dbh = Database::connect();
+		$dbh = App::getDatabase()->connect();
 
 		$query = "
 			DELETE FROM ".$this->getTableName();
@@ -161,16 +339,17 @@ abstract class Model implements ModelInterface {
 	 * @param unknown $id
 	 * @return number
 	 */
-	public function deleteById($id) {
-		$dbh = Database::connect();
+	public function deleteById(array $id) {
+		$dbh = App::getDatabase()->connect();
 
 		$query = "
 			DELETE FROM ".$this->getTableName();
-		$where = true;
+
+		$firstLine = true;
 		foreach($this::getPrimaries() as $pk) {
-			if($where) {
+			if($firstLine) {
 				$query .= "\nWHERE ".$pk." = '".$id[$pk]."'";
-				$where = false;
+				$firstLine = false;
 			} else {
 				$query .= "\nAND ".$pk." = '".$id[$pk]."'";
 			}

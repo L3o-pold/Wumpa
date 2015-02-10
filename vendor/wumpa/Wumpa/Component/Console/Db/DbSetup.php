@@ -7,11 +7,15 @@ use Wumpa\Component\Database\Database;
 use Wumpa\Component\Console\ComponentMom;
 use Wumpa\Component\Renderer\Renderer;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class DbSetup extends ComponentMom {
 
 	public function launch() {
 		$this->clear();
-		echo "Wumpa Database Setup started...\n";
+		echo "\033[1mWumpa Database Setup started...\033[0m\n";
 		echo "This will setup your database connection for you.\n";
 		echo "\n";
 		echo "You'll need these data:\n";
@@ -86,6 +90,23 @@ class DbSetup extends ComponentMom {
 		$this->generateFile($data);
 		echo "\n";
 		echo "\033[32;1mDatabase configuration is now done!\033[0m\n";
+
+		do {
+			$start = strtolower(readline("Do you want to test database connectivity? [Y/n] "));
+			if($start != "y" && $start != "yes" && $start != "n" && $start != "no") {
+				echo "Invalid input.\n";
+			}
+		} while($start != "y" && $start != "yes" && $start != "n" && $start != "no");
+
+		if($start == "n" || $start == "no") {
+			try {
+				$dbh = App::getDatabase()->connect();
+			} catch(\Exception $e) {
+				echo "\033[31;1mFAIL\033[0m\n\n";
+				exit;
+			}
+			echo "\033[32;1mOK\033[0m\n";
+		}
 
 	}
 

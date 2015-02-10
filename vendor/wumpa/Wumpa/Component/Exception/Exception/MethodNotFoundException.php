@@ -2,6 +2,10 @@
 
 namespace Wumpa\Component\Exception\Exception;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class MethodNotFoundException extends \Exception {
 
 	private $method;
@@ -14,13 +18,16 @@ class MethodNotFoundException extends \Exception {
 	public function getMethod() {
 		return $this->method;
 	}
+
 	public function setMethod($method) {
 		$this->method = $method;
 		return $this;
 	}
+
 	public function getClass() {
 		return $this->class;
 	}
+	
 	public function setClass($class) {
 		$this->class = $class;
 		return $this;

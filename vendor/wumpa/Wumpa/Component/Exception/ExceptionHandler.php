@@ -9,17 +9,25 @@ use Wumpa\Component\Exception\Exception\IllegalMethodCall;
 use Wumpa\Component\Exception\Exception\InvalidArgumentException;
 use Wumpa\Component\Exception\Exception\MethodNotFoundException;
 use Wumpa\Component\Exception\Exception\RoutingException;
-use Wumpa\Component\App\App;
 
+/**
+ * Provide an Exception handler that can display them in a more user friendly way
+ * with stack trace.
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class ExceptionHandler {
 
-	/**
-	 * Define Pulsar exception handling.
-	 *
-	 * Define a way to render each exceptions thrown by the framework.
-	 *
-	 * @param \Exception $e
-	 */
+	private $trace;
+
+	public function register() {
+		set_exception_handler(array($this, "handle"));
+	}
+
+	public function unregister() {
+		set_exception_handler(null);
+	}
+
 	public function handle($e) {
 		\Twig_Autoloader::register();
 		$loader = new \Twig_Loader_Filesystem(__DIR__."/../../../../../app/resources/view/templates/");
@@ -30,7 +38,7 @@ class ExceptionHandler {
 			"message" => $e->getMessage(),
 		);
 
-		if(App::isDisplayingTrace()) {
+		if($this->isTracing()) {
 			$tabTrace = "<table class=\"table table-hover table-bordered\">";
 			$tabTrace .= "<tr class=\"danger\">";
 			$tabTrace .= "<th>File</th>";
@@ -86,7 +94,7 @@ class ExceptionHandler {
 							} else {
 								$data["description"] .= "[". $index ."] => ". $value;
 							}
-							
+
 							$i++;
 						}
 						$data["description"] .= "), ";
@@ -107,17 +115,17 @@ class ExceptionHandler {
 		echo $twig->render("exceptionTemplate.html.twig", $data);
 	}
 
-	/**
-	 * Register the handle() function as exception handler
-	 */
-	public static function register() {
-		set_exception_handler(array(new self(), "handle"));
+	public function __construct($trace = true) {
+		$this->setTrace($trace);
 	}
 
-	/**
-	 * Reset the exception handler to its default state
-	 */
-	public static function unregister() {
-		set_exception_handler(null);
+	public function isTracing() {
+		return $this->trace;
 	}
+
+	public function setTrace($trace) {
+		$this->trace = $trace;
+		return $this;
+	}
+
 }

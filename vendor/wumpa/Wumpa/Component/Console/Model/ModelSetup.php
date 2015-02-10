@@ -2,22 +2,26 @@
 
 namespace Wumpa\Component\Console\Model;
 
-use Wumpa\Component\App\ConsoleApp;
+use Wumpa\Component\App\App;
+use Wumpa\Component\App\AppFactory;
 use Wumpa\Component\Console\Db\DbSetup;
 use Wumpa\Component\Console\ComponentMom;
-use Wumpa\Component\Database\Database;
 use Wumpa\Component\Database\Analyzer\PgAnalyzer;
 use Wumpa\Component\Renderer\Renderer;
 use Wumpa\Component\FileSystem\File;
 
+/**
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class ModelSetup extends ComponentMom {
 
 	private $analyzer;
 
 	public function launch() {
 		$this->clear();
-		echo "Wumpa Model Generator started...\n";
-		echo "This tool will generate modele classes from your database structure.\n";
+		echo "\033[1mWumpa Model Generator started...\033[0m\n";
+		echo "This tool will generate model classes from your database structure.\n";
 		echo "\n";
 		echo "A configured database is required.\n";
 		echo "\n";
@@ -38,29 +42,63 @@ class ModelSetup extends ComponentMom {
 			$this->setProjectPath($projectPath);
 		}
 
-		ConsoleApp::init($this->getProjectPath());
-		ConsoleApp::run();
+		App::init($this->getProjectPath(), Appfactory::APP_TERM);
 
 		echo "\nChecking if a database is set for the project... ";
-		if(is_null(Database::get())) {
+		if(is_null(App::getDatabase())) {
 			echo "\033[31;1mFAIL\O33[0m\n";
-			// => ENTER DBsetup
+
+			do {
+				$start = strtolower(readline("Do you want to setup a database now? [Y/n] "));
+				if($start != "y" && $start != "yes" && $start != "n" && $start != "no") {
+					echo "Invalid input.\n";
+				}
+			} while($start != "y" && $start != "yes" && $start != "n" && $start != "no");
+
+			if($start == "n" || $start == "no") {
+				echo "\n";
+				exit;
+			}
+
+			$component = new DbSetup();
+			$component->setProjectPath($this->getProjectPath());
+			$component->launch();
 		} else {
 			echo "\033[32;1mOK\033[0m\n";
 		}
 
-		switch(Database::get()->getDriver()) {
+		switch(App::getDatabase()->getDriver()) {
 			case "pgsql":
 				$this->setAnalyzer(new PgAnalyzer());
 				break;
 			default:
-				echo "\nOnly PostgreSQL is supported for now.\n";
+				echo "\nOnly PostgreSQL is supported for now. Sorry...\n";
 				exit;
 		}
 
 		echo "Checking database connectivity... ";
-		$dbh = Database::connect();
-		// If fail => Exception
+		try {
+			$dbh = App::getDatabase()->connect();
+		} catch(\Exception $e) {
+			echo "\033[31;1mFAIL\033[0m\n";
+
+			do {
+				$start = strtolower(readline("Do you want to setup a database now? [Y/n] "));
+				if($start != "y" && $start != "yes" && $start != "n" && $start != "no") {
+					echo "Invalid input.\n";
+				}
+			} while($start != "y" && $start != "yes" && $start != "n" && $start != "no");
+
+			if($start == "n" || $start == "no") {
+				echo "\n";
+				exit;
+			}
+
+			$component = new DbSetup();
+			$component->setProjectPath($this->getProjectPath());
+			$component->launch();
+		}
+
 		echo "\033[32;1mOK\033[0m\n";
 
 		echo "\nRetrieving tables...\n";
@@ -84,23 +122,6 @@ class ModelSetup extends ComponentMom {
 			echo " \033[32;1mDone\033[0m\n";
 		} while($selectedTable != "0");
 
-		/*do {
-			$table = $this->step();
-			if($table != "") {
-				while(!in_array($table, $analyzer->getTables())) {
-					$this->errorMessage(self::TABLE_NOT_FOUND);
-					$table = $this->step();
-				}
-				$this->successMessage(self::TABLE_FOUND);
-
-				$this->nextStep();
-				$class = $this->step();
-				echo $class;
-				echo "\n";
-				$this->previousStep();
-			}
-		} while($table != "");
-		*/
 	}
 
 	private function generateModel($tableName, $className) {
@@ -112,7 +133,7 @@ class ModelSetup extends ComponentMom {
 		$data["columns"] = $this->getAnalyzer()->getColumns($tableName);
 		$data["primaries"] = $this->getAnalyzer()->getPrimaries($tableName);
 
-		$model = new File(ConsoleApp::get(ConsoleApp::MODEL).$className.".php");
+		$model = new File(App::get()->getModelDir().$className.".php");
 		$model->open();
 		fwrite($model->getResource(), $renderer->render("Model.php.twig", $data));
 		$model->close();

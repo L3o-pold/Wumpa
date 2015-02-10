@@ -2,27 +2,20 @@
 
 namespace Wumpa\Component\FileSystem;
 
+/**
+ * Provide methodes to manipulate file and dirs.
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
+ */
 class FSObject {
-	
+
 	private $name;
-	
-	public function __construct($name) {
-		$this->setName($name);
-	}
-	
-	public function getName() {
-		return $this->name;
-	}
-	public function setName($name) {
-		$this->name = $name;
-		return $this;
-	}
-	
+
 	/**
-	 * 
-	 * @param boolean $overwrite
-	 * @return number|boolean
-	 */
+	*
+	* @param boolean $overwrite
+	* @return number|boolean
+	*/
 	public function create($overwrite = false) {
 		if($this instanceof File) {
 			if($overwrite || !file_exists($this->getName())) {
@@ -35,12 +28,12 @@ class FSObject {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * 
-	 * @param boolean $recursive
-	 * @return boolean
-	 */
+	*
+	* @param boolean $recursive
+	* @return boolean
+	*/
 	public function delete($recursive = false) {
 		if(file_exists($this->getName())) {
 			if($this instanceof File) {
@@ -55,12 +48,12 @@ class FSObject {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Attempt to rename or move a file or directory
-	 * @param string $newName
-	 * @return boolean
-	 */
+	* Attempt to rename or move a file or directory
+	* @param string $newName
+	* @return boolean
+	*/
 	public function rename($newName, $overwrite = true) {
 		if(file_exits($this->getName())) {
 			if($overwrite || !file_exists($newName)) {
@@ -72,11 +65,11 @@ class FSObject {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * 
-	 * @param string $dir
-	 */
+	*
+	* @param string $dir
+	*/
 	private static function recursDel($dir) {
 		foreach (scandir($file) as $file) {
 			if(is_file($file)) {
@@ -87,5 +80,18 @@ class FSObject {
 			}
 		}
 	}
-	
-} 
+
+	public function __construct($name) {
+		$this->setName($name);
+	}
+
+	public function getName() {
+		return $this->name;
+	}
+
+	public function setName($name) {
+		$this->name = $name;
+		return $this;
+	}
+
+}

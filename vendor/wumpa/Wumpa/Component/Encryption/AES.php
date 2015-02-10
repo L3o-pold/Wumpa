@@ -4,11 +4,14 @@ namespace Wumpa\Component\Encryption;
 
 /**
  * This class offers way to encrypt data using AES algorythm.
- * 
+ *
  * This way to encrypt should not be used to hash passwords but secure data.
  * To hash passwords consider using PHP5.5 password hashing.
+ *
+ * NOT STABLE YET
+ *
+ * @author Bastien de Luca <dev@de-luca.io>
  */
-
 class AES {
 
     const M_CBC = 'cbc';
@@ -18,11 +21,11 @@ class AES {
     const M_OFB = 'ofb';
     const M_STREAM = 'stream';
 
-    protected $key;
-    protected $cipher;
-    protected $data;
-    protected $mode;
-    protected $IV;
+    private $key;
+    private $cipher;
+    private $data;
+    private $mode;
+    private $IV;
 
     /**
     *
