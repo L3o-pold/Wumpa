@@ -3,7 +3,7 @@
 namespace Wumpa\Component\Database;
 
 use Wumpa\Component\App\App;
-use Wumpa\Component\App\AppConsole;
+use Wumpa\Component\App\AppIndex;
 
 /**
  * Handle the database used by the framework
@@ -26,7 +26,7 @@ class Database {
 		$dbh = new \PDO($this->getConnectionString(), $this->getUser(), $this->getPassword());
 		$dbh->exec('SET CHARACTER SET utf8');
 
-		if((!($this->app instanceof AppConsole)) && $this->getApp()->isHandlingExcp()) {
+		if(($this->app instanceof AppIndex) && $this->getApp()->isHandlingExcp()) {
 			$dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		}
 
