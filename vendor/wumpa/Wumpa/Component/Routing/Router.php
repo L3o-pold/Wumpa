@@ -8,6 +8,7 @@ use Wumpa\Component\Routing\Loader\PhpLoader;
 use Wumpa\Component\Exception\Exception\IllegalMethodCall;
 use Wumpa\Component\Exception\Exception\ConfigErrorException;
 use Wumpa\Component\Exception\Exception\RoutingException;
+use Wumpa\Component\Exception\Exception\InvalidArgumentException;
 
 /**
  * Provide methodes to handle routing system in project.
@@ -28,7 +29,7 @@ class Router {
 		return file_exists($this->getApp()->getControllerDir().$controllerName.".php");
 	}
 
-	private function match() {
+	public function match() {
 		$regex = "/{(.*?)}/";
 		$found = null;
 
@@ -218,10 +219,6 @@ class Router {
 		$this->setApp($app);
 		$loader = new PhpLoader($app->getRoutesFile());
 		$this->setRoutingTable($loader->load());
-		if($app instanceof AppIndex) {
-			$this->setRequest(new Request());
-			$this->setRoute($this->match());
-		}
 	}
 
 	public function getRoutingTable() {

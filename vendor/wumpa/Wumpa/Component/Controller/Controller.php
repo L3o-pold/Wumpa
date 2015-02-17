@@ -15,7 +15,7 @@ class Controller {
 	private $url;
 
 	public function render($template, $data = array()) {
-		$data['~url'] = $this->getUrl();
+		$data['_url'] = $this->getUrl();
 		$loader = new \Twig_Loader_Filesystem($this->getTemplateDir());
 		$twig = new \Twig_Environment($loader);
 		echo $twig->render($template, $data);

@@ -28,7 +28,7 @@ class Box {
     public static function store($nameTag, $item, $expire = false) {
         $box = $_SESSION['~Box'];
         $box = unserialize($box);
-        $storage = $crate->getStorage();
+        $storage = $box->getStorage();
 
         $storage[$nameTag] = array(
             'item' => $item,
