@@ -141,13 +141,14 @@ class Router {
 
 		foreach($routingTable as $route) {
 			if($route->getName() == $routeName) {
-				if($route->getPath() == "/") {
-					return "http://".$route->getPath();
-				}
 
 				$parts = explode("/", $route->getPath());
 				$first = 0;
 				$genUrl = $_SERVER['HTTP_HOST'].$this->getApp()->getUrl();
+
+				if($route->getPath() == "/") {
+					return "http://".$genUrl;
+				}
 
 				foreach($parts as $node) {
 

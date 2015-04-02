@@ -41,7 +41,7 @@ class ProjectSetup extends ComponentMom {
 
 
 		echo "\nCreating ".$this->getProjectPath()." Directory... ";
-		mkdir($this->setProjectPath());
+		mkdir($this->getProjectPath());
 		echo "\033[32;1mDone.\033[0m\n";
 
 		echo "Generating project structure... ";

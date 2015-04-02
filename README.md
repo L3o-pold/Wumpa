@@ -19,7 +19,7 @@ To get started you just need to the sources.
 
 The easiest way is to use [Composer](https://getcomposer.org "Composer").
 
-	$ php composer.phar create-project wumpa/wumpa
+	$ php composer.phar create-project wumpa/wumpa -s "dev"
 
 You can also download the sources from the [GitHub repo](https://github.com/de-luca/wumpa "Wumpa repo on GitHub").
 
@@ -41,8 +41,8 @@ External PHP libraries: (Check their documentation to get started with these)
 Todo list:
 - Add MySQL support (model generation)
 - Error handling and reporting
-- Add more database support
+- i18n
 
 4) Documentation & Getting started
 -----
-To get started or to learn more about use of Wumpa check out the Wiki of the GitHub repo.
+To get started and to learn how to use Wumpa check out the [wiki](https://github.com/de-luca/Wumpa/wiki).  

@@ -40,13 +40,21 @@ abstract class Model implements ModelInterface {
 	 *
 	 * @return multitype:unknown
 	 */
-	public function getAll(array $orders = null, $limit = null, $offset = null) {
+	public function getAll($tableName = false, array $orders = null, $limit = null, $offset = null) {
 		$dbh = App::getDatabase()->connect();
 
-		$query = "
-			SELECT *
-			FROM ".$this::getTableName();
+		if(!$tableName) {
+			$query = "
+				SELECT *
+				FROM ".$this::getTableName();
+		} else {
+			$query = "
+				SELECT t.*, p.relname as tablename
+				FROM ".$this::getTableName()." t, pg_class p
+				WHERE t.tableoid = p.oid";
+		}
 
+		
 		if(!is_null($orders)) {
 			$query .= "\nORDER BY ";
 			$first = true;
