@@ -4,7 +4,6 @@ namespace Wumpa\Component\App;
 
 use Wumpa\Component\Exception\Exception\DirectoryNotFoundException;
 use Wumpa\Component\Exception\Exception\ConfigErrorException;
-use Wumpa\Component\Routing\Request;
 
 /**
  * Define an application callable from an index.php file.
@@ -22,8 +21,7 @@ class AppIndex extends AppMom {
     private $excpHandler;
 
     public function run() {
-        $this->getRouter()->setRequest(new Request());
-        $this->getRouter()->setRoute($this->getRouter()->match());
+        $this->getRouter()->handleRequest();
         $this->getRouter()->dispatch();
     }
 

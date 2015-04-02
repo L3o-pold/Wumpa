@@ -29,7 +29,12 @@ class Router {
 		return file_exists($this->getApp()->getControllerDir().$controllerName.".php");
 	}
 
-	public function match() {
+	public function handleRequest() {
+		$this->setRequest(new Request());
+		$this->setRoute($this->match());
+	}
+
+	private function match() {
 		$regex = "/{(.*?)}/";
 		$found = null;
 

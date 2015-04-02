@@ -123,7 +123,7 @@ abstract class Model implements ModelInterface {
 
 		$dbh = null;
 
-		return $data;
+		return (int) $data;
 	}
 
 	/**
