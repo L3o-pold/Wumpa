@@ -175,6 +175,7 @@ abstract class Model implements ModelInterface {
 	 *
 	 */
 	public function getByCols($tableName = false, array $ands = null, array $ors = null, array $orders = null, $limit = null, $offset = null) {
+
 		$dbh = App::getDatabase()->connect();
 
 		if(!$tableName) {
@@ -201,7 +202,7 @@ abstract class Model implements ModelInterface {
 					$query .= "\nWHERE ".$col." ".$and['operator']." '".$and['value']."'";
 					$firstLine = false;
 				} else {
-					$query .= "\AND ".$col." ".$and['operator']." '".$and['value']."'";
+					$query .= "\nAND ".$col." ".$and['operator']." '".$and['value']."'";
 				}
 			}
 		}
