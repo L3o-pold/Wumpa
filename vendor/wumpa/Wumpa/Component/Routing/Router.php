@@ -5,6 +5,7 @@ namespace Wumpa\Component\Routing;
 use Wumpa\Component\App\App;
 use Wumpa\Component\App\AppIndex;
 use Wumpa\Component\Routing\Loader\PhpLoader;
+use Wumpa\Component\Exception\Exception\FileNotFoundException;
 use Wumpa\Component\Exception\Exception\IllegalMethodCall;
 use Wumpa\Component\Exception\Exception\ConfigErrorException;
 use Wumpa\Component\Exception\Exception\RoutingException;

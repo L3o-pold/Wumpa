@@ -10,6 +10,10 @@ use Wumpa\Component\App\App;
  */
 class PgAnalyzer implements AnalyzerInterface {
 
+
+	/**
+	 * Return an array containing the database tables names.
+	 */
 	public function getTables() {
 		$dbh = App::getDatabase()->connect();
 
@@ -30,13 +34,16 @@ class PgAnalyzer implements AnalyzerInterface {
 		return $tables;
 	}
 
-	public function getColumns($table) {
+	/**
+	 * Return an array containing the columns names from the specified table.
+	 */
+	public function getCols($table) {
 		$dbh = App::getDatabase()->connect();
 
 		$sql = "
 			select column_name
 			from information_schema.columns
-			where table_name like '".$table."'
+			where table_name = '$table'
 		";
 
 		$cols = array();
@@ -49,26 +56,45 @@ class PgAnalyzer implements AnalyzerInterface {
 		return $cols;
 	}
 
-	public function getPrimaries($table) {
+
+	public function getPK($table) {
 		$dbh = App::getDatabase()->connect();
 
 		$sql = "
-			SELECT
-			pg_attribute.attname,
-			format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
-			FROM pg_index, pg_class, pg_attribute
-			WHERE
-			pg_class.oid = '".$table."'::regclass AND
-			indrelid = pg_class.oid AND
-			pg_attribute.attrelid = pg_class.oid AND
-			pg_attribute.attnum = any(pg_index.indkey)
-			AND indisprimary
+			SELECT kcu.column_name
+			FROM information_schema.table_constraints AS tc
+			JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+			WHERE tc.constraint_type = 'PRIMARY KEY'
+			AND tc.table_name = '$table'
 		";
 
 		$cols = array();
 		$sth = $dbh->query($sql);
 		while ($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
-			$cols[] = $res["attname"];
+			$cols[] = $res["column_name"];
+		}
+
+		$dbh = null;
+		return $cols;
+	}
+
+
+	public function getFK($table) {
+		$dbh = App::getDatabase()->connect();
+
+		$sql = "
+			SELECT kcu.column_name, ccu.table_name
+			FROM information_schema.table_constraints AS tc
+			JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+			JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+			WHERE tc.constraint_type = 'FOREIGN KEY'
+			AND tc.table_name = '$table'
+		";
+
+		$cols = array();
+		$sth = $dbh->query($sql);
+		while($res = $sth->fetch(\PDO::FETCH_ASSOC)) {
+			$cols[$res["column_name"]] = $res["table_name"];
 		}
 
 		$dbh = null;

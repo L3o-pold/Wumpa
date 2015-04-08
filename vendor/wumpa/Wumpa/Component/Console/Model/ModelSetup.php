@@ -130,9 +130,8 @@ class ModelSetup extends ComponentMom {
 		$data = array();
 		$data["className"] = $className;
 		$data["tableName"] = $tableName;
-		$data["columns"] = $this->getAnalyzer()->getColumns($tableName);
-		$data["primaries"] = $this->getAnalyzer()->getPrimaries($tableName);
-
+		$data["columns"] = $this->getAnalyzer()->getCols($tableName);
+		$data["primaries"] = $this->getAnalyzer()->getPK($tableName);
 		$model = new File(App::get()->getModelDir().$className.".php");
 		$model->open();
 		fwrite($model->getResource(), $renderer->render("Model.php.twig", $data));

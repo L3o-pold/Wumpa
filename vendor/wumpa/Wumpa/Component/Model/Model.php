@@ -54,7 +54,7 @@ abstract class Model implements ModelInterface {
 				WHERE t.tableoid = p.oid";
 		}
 
-		
+
 		if(!is_null($orders)) {
 			$query .= "\nORDER BY ";
 			$first = true;
@@ -174,15 +174,26 @@ abstract class Model implements ModelInterface {
 	 *
 	 *
 	 */
-	public function getByCols(array $ands = null, array $ors = null, array $orders = null, $limit = null, $offset = null) {
+	public function getByCols($tableName = false, array $ands = null, array $ors = null, array $orders = null, $limit = null, $offset = null) {
 		$dbh = App::getDatabase()->connect();
 
-		$query = "
-			SELECT *
-			FROM " .$this::getTableName()
-		;
+		if(!$tableName) {
+			$query = "
+				SELECT *
+				FROM ".$this::getTableName();
+		} else {
+			$query = "
+				SELECT t.*, p.relname as tablename
+				FROM ".$this::getTableName()." t, pg_class p
+			";
+		}
 
-		$firstLine = (!is_null($ands)) || (!is_null($ors));
+		$firstLine = (!is_null($ands))||(!is_null($ors));
+
+		if($tableName) {
+			$query .= "\nWHERE t.tableoid = p.oid";
+			$firstLine = false;
+		}
 
 		if(!is_null($ands)) {
 			foreach($ands as $col => $and) {
