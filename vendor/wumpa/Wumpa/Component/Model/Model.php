@@ -319,10 +319,10 @@ abstract class Model implements ModelInterface {
 		foreach($this as $column => $val) {
 			if(!in_array($column, $this->getPrimaries())) {
 				if($first) {
-					$query .= $column." = '".$val."'";
+					$query .= (is_null($val)) ? $column." = null" : $column." = '".$val."'";
 					$first = false;
 				} else {
-					$query .= ", ".$column." = '".$val."'";
+					$query .= (is_null($val)) ? ", ".$column." = null" : ", ".$column." = '".$val."'";
 				}
 			}
 		}
