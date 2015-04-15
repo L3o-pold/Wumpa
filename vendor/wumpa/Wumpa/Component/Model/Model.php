@@ -28,6 +28,11 @@ abstract class Model implements ModelInterface {
 	const LOET = "<=";
 
 
+	public function __construct(array $id = null) {
+		if(!is_null($id))
+			$this->getById($id);
+	}
+
 	/**
 	 * Get all rows of the table and return them in an array of objects
 	 * Restrictions are not allowed in this function (use getByCols instead)
@@ -282,11 +287,22 @@ abstract class Model implements ModelInterface {
 			}
 		}
 		$query .= ")";
+		$query .= "\nRETURNING ";
+		$first = true;
+		foreach($this->getPrimaries() as $pk) {
+			if($first) {
+				$query .= $pk;
+				$first = false;
+			} else
+				$query .= ", ".$pk;
+		}
 
+		$sth = $dbh->query($query);
 
-		$res = $dbh->exec($query);
+		$data = $sth->fetch(\PDO::FETCH_ASSOC);
+
 		$dbh = null;
-		return $res;
+		return $data;
 	}
 
 	/**
