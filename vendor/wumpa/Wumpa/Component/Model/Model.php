@@ -59,7 +59,6 @@ abstract class Model implements ModelInterface {
 				WHERE t.tableoid = p.oid";
 		}
 
-
 		if(!is_null($orders)) {
 			$query .= "\nORDER BY ";
 			$first = true;
@@ -394,6 +393,66 @@ abstract class Model implements ModelInterface {
 		$res = $dbh->exec($query);
 		$dbh = null;
 		return $res;
+	}
+
+
+	/**
+	 * Get the spcified Item from the database and resolve all its dependencies
+	 * and compositions.
+	 * Will return a "tree" of objects based on the database structure
+	 *
+	 * The dependencies are injected in the foreign key attributes
+	 * The Compositions are injected as array of object
+	 */
+	public function getDataTree(array $id) {
+		$this->getById($id);
+
+		foreach($this as $attrib => $value) {
+			foreach($this::getDependencies() as $key => $class) {
+				if($attrib === $key) {
+					$id = array();
+					foreach($class::getPrimaries() as $pk) {
+						$id[$pk] = $this->$attrib;
+					}
+					$this->$attrib = new $class($id);
+				}
+			}
+		}
+
+		foreach($this::getCompositions() as $class => $id) {
+			$attrName = (substr($class, -1) === 's') ? lcfirst($class) : lcfirst($class."s");
+
+			$where = array(
+				$id => array()
+			);
+			foreach($this::getPrimaries() as $pk) {
+				$where[$id]["operator"] = $this::EQ;
+				$where[$id]["value"] = $this->$pk;
+			}
+			$c = new $class();
+			$this->$attrName = $c->getByCols(false, $where);
+		}
+
+		return($this);
+	}
+
+	/**
+	 * Attempt to update the DataTree by updating all already existing objects
+	 * and storing all not already in the database.
+	 *
+	 * This methodes checks if primary keys exists to determine if object must be
+	 * inserted or updated
+	 */
+	public function saveDataTree() {
+
+	}
+
+	/**
+	 * Attempt to remove the whole DataTree from the database.
+	 * Use with care!!
+	 */
+	public function deleteDataTree() {
+
 	}
 
 }
