@@ -20,7 +20,7 @@ class FileNotFoundException extends \Exception {
 	}
 
 	public function setFileNotFound($fileNotFound) {
-		$this->fileNotFound = $file;
+		$this->fileNotFound = $fileNotFound;
 		return $this;
 	}
 
