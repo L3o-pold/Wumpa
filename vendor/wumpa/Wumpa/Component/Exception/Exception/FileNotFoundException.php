@@ -11,7 +11,7 @@ class FileNotFoundException extends \Exception {
 	private $fileNotFound;
 
 	public function __construct($fileNotFound, $message = "File cannot be found", $code = null, $previous = null) {
-		$this->setFile($fileNotFound);
+		$this->setFileNotFound($fileNotFound);
 		parent::__construct($message, $code, $previous);
 	}
 
