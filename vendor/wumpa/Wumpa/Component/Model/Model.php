@@ -27,6 +27,10 @@ abstract class Model implements ModelInterface {
 	const GOET = ">=";
 	const LOET = "<=";
 
+	const DEP = "1";
+	const FULL = "0";
+	const COMP = "-1";
+
 
 	public function __construct(array $id = null) {
 		if(!is_null($id))
@@ -397,44 +401,49 @@ abstract class Model implements ModelInterface {
 
 
 	/**
-	 * Get the spcified Item from the database and resolve all its dependencies
+	 * Get the specified Item from the database and resolve all its dependencies
 	 * and compositions.
 	 * Will return a "tree" of objects based on the database structure
 	 *
 	 * The dependencies are injected in the foreign key attributes
 	 * The Compositions are injected as array of object
 	 */
-	public function getDataTree(array $id) {
+	public function getDataTree(array $id, $way = 0) {
 		$this->getById($id);
 
-		foreach($this as $attrib => $value) {
-			foreach($this::getDependencies() as $key => $class) {
-				if($attrib === $key) {
-					$id = array();
-					foreach($class::getPrimaries() as $pk) {
-						$id[$pk] = $this->$attrib;
+		if($way === 0 || $way === 1) {
+			foreach($this as $attrib => $value) {
+				foreach($this::getDependencies() as $key => $class) {
+					if($attrib === $key && !is_null($this->$attrib)) {
+						$id = array();
+						foreach($class::getPrimaries() as $pk) {
+							$id[$pk] = $this->$attrib;
+						}
+						$this->$attrib = new $class($id);
 					}
-					$this->$attrib = new $class($id);
 				}
 			}
 		}
 
-		foreach($this::getCompositions() as $class => $id) {
-			$attrName = (substr($class, -1) === 's') ? lcfirst($class) : lcfirst($class."s");
+		if($way === 0 || $way === -1) {
+			foreach($this::getCompositions() as $class => $id) {
+				$attrName = (substr($class, -1) === 's') ? lcfirst($class) : lcfirst($class."s");
 
-			$where = array(
-				$id => array()
-			);
-			foreach($this::getPrimaries() as $pk) {
-				$where[$id]["operator"] = $this::EQ;
-				$where[$id]["value"] = $this->$pk;
+				$where = array(
+					$id => array()
+				);
+				foreach($this::getPrimaries() as $pk) {
+					$where[$id]["operator"] = $this::EQ;
+					$where[$id]["value"] = $this->$pk;
+				}
+				$c = new $class();
+				$this->$attrName = $c->getByCols(false, $where);
 			}
-			$c = new $class();
-			$this->$attrName = $c->getByCols(false, $where);
 		}
 
 		return($this);
 	}
+
 
 	/**
 	 * Attempt to update the DataTree by updating all already existing objects
