@@ -30,7 +30,7 @@ class ExceptionHandler {
 
 	public function handle($e) {
 		\Twig_Autoloader::register();
-		$loader = new \Twig_Loader_Filesystem(__DIR__."/../../../../../app/resources/view/templates/");
+		$loader = new \Twig_Loader_Filesystem(__DIR__."/templates/");
 		$twig = new \Twig_Environment($loader);
 
 		$data = array(
@@ -38,42 +38,8 @@ class ExceptionHandler {
 			"message" => $e->getMessage(),
 		);
 
-		if($this->isTracing()) {
-			$tabTrace = "<table class=\"table table-hover table-bordered\">";
-			$tabTrace .= "<tr class=\"danger\">";
-			$tabTrace .= "<th>File</th>";
-			$tabTrace .= "<th>Line</th>";
-			$tabTrace .= "<th>Function</th>";
-			if(isset($e->getTrace()[0]["class"])) {
-				$tabTrace .= "<th>Class</th>";
-			}
-			$tabTrace .= "</tr>";
-
-			foreach ($e->getTrace() as $step) {
-				$tabTrace .= "<tr>";
-				if(isset($step["file"])) {
-					$tabTrace .= "<td>".$step["file"]."</td>";
-				} else {
-					$tabTrace .= "<td></td>";
-				}
-				if(isset($step["line"])) {
-					$tabTrace .= "<td>".$step["line"]."</td>";
-				} else {
-					$tabTrace .= "<td></td>";
-				}
-				$tabTrace .= "<td>".$step["function"]."</td>";
-				if(isset($step["class"])) {
-					$tabTrace .= "<td>".$step["class"]."</td>";
-				} else {
-					$tabTrace .= "<td></td>";
-				}
-				$tabTrace .= "</tr>";
-			}
-
-			$tabTrace .= "</table>";
-
-			$data["tabTrace"] = $tabTrace;
-		}
+		if($this->isTracing())
+			$data["e"] = $e;
 
 		if($e instanceof DirectoryNotFoundException) {
 			$data["description"] = "The following directory could not be found on server: <em><b>" .$e->getDirectory(). "</b></em>.";
