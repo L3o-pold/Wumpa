@@ -17,6 +17,9 @@ abstract class Model implements ModelInterface {
 	const LIKE = "LIKE";
 	const NOTLIKE = "NOT LIKE";
 
+	const IS = "IS";
+	const ISN = "IS NOT";
+
 	const IN = "IN";
 	const NIN = "NOT IN";
 
@@ -27,14 +30,17 @@ abstract class Model implements ModelInterface {
 	const GOET = ">=";
 	const LOET = "<=";
 
-	const DEP = "1";
-	const FULL = "0";
-	const COMP = "-1";
+	const DEP = 1;
+	const FULL = 0;
+	const COMP = -1;
 
 
-	public function __construct(array $id = null) {
+	/**
+	 * Constructor can be used to retrieve an object by its id
+	 */
+	public function __construct(array $id = null, $tableName = false) {
 		if(!is_null($id))
-			$this->getById($id);
+			$this->getById($id, $tableName);
 	}
 
 	/**
@@ -46,42 +52,28 @@ abstract class Model implements ModelInterface {
 	 *     "columnToOrder" => "way (ASC or DESC)"
 	 * );
 	 * It is also possible to define a limit and offset.
-	 *
-	 * @return multitype:unknown
 	 */
 	public function getAll($tableName = false, array $orders = null, $limit = null, $offset = null) {
 		$dbh = App::getDatabase()->connect();
 
-		if(!$tableName) {
-			$query = "
-				SELECT *
-				FROM ".$this::getTableName();
-		} else {
-			$query = "
-				SELECT t.*, p.relname as tablename
-				FROM ".$this::getTableName()." t, pg_class p
-				WHERE t.tableoid = p.oid";
-		}
+		if(!$tableName)
+			$query = "SELECT *
+					  FROM ".$this::getTableName();
+		else
+			$query = "SELECT t.*, p.relname as tablename
+					  FROM ".$this::getTableName()." t, pg_class p
+					  WHERE t.tableoid = p.oid";
 
-		if(!is_null($orders)) {
+		if($fl = !is_null($orders)) {
 			$query .= "\nORDER BY ";
-			$first = true;
 			foreach($orders as $col => $way) {
-				if($first) {
-					$query .= $col ." ". $way;
-					$first = false;
-				} else {
-					$query .= ", ".$col." ".$way;
-				}
+				$query .= (($fl) ? "" : ", ").$col ." ". $way;
+				$fl = false;
 			}
 		}
 
-		if(!is_null($limit))
-			$query .= "\nLIMIT ".$limit;
-
-		if(!is_null($offset))
-			$query .= "\nOFFSET ".$offset;
-
+		$query .= (!is_null($limit)) ? "\nLIMIT ".$limit : "";
+		$query .= (!is_null($offset)) ? "\nOFFSET ".$offset : "";
 
 		$sth = $dbh->query($query);
 
@@ -95,42 +87,32 @@ abstract class Model implements ModelInterface {
 		}
 
 		$dbh = null;
-
 		return $data;
 	}
 
 	/**
-	 * Allow to count elements in a table
-	 * Restrictions are facultative.
+	 * Attempt to count elements in a table
+	 * Restrictions are not mandatory.
 	 */
 	public function count(array $ands = null, array $ors = null) {
 		$dbh = App::getDatabase()->connect();
 
-		$query = "
-			SELECT COUNT(*)
-			FROM ".$this::getTableName();
+		$query = "SELECT COUNT(*)
+				  FROM ".$this::getTableName();
 
-		$firstLine = !is_null($ands) || !is_null($ors);
+		$fl = !(is_null($ands)&&is_null($ors));
 
 		if(!is_null($ands)) {
 			foreach($ands as $col => $and) {
-				if($firstLine) {
-					$query .= "\nWHERE ".$col." ".$and['operator']." '".$and['value']."'";
-					$firstLine = false;
-				} else {
-					$query .= "\AND ".$col." ".$and['operator']." '".$and['value']."'";
-				}
+				$query .= "\n".(($fl) ? "WHERE" : "AND")." ".$col." ".$and['operator']." ".(($and['value'] === "null") ? $and['value'] : "'".$and['value']."'");
+				$fl = false;
 			}
 		}
 
 		if(!is_null($ors)) {
 			foreach($ors as $col => $or) {
-				if($firstLine) {
-					$query .= "\nWHERE ".$col." ".$or['operator']." '".$or['value']."'";
-					$firstLine = false;
-				} else {
-					$query .= "\nOR ".$col." ".$or['operator']." '".$or['value']."'";
-				}
+				$query .= "\n".(($fl) ? "WHERE" : "OR")." ".$col." ".$or['operator']." ".(($or['value'] === "null") ? $or['value'] : "'".$or['value']."'");
+				$fl = false;
 			}
 		}
 
@@ -138,33 +120,29 @@ abstract class Model implements ModelInterface {
 		$data = $sth->fetch(\PDO::FETCH_ASSOC)['count'];
 
 		$dbh = null;
-
 		return (int) $data;
 	}
 
 	/**
 	 * Attempt to get a single element in the database and put its data in the current object
+	 * Also return the current object.
+	 * Can retrieve the tableName of the object;
 	 * Null data are returned if nothing is found
-	 *
-	 * @param unknown $id
-	 * @return \Wumpa\Component\Model\Model
 	 */
-	public function getById(array $id) {
+	public function getById(array $id, $tableName = false) {
 		$dbh = App::getDatabase()->connect();
 
-		$query = "
-    		SELECT *
-    		FROM ".$this::getTableName()
-    	;
+		if($fl = !$tableName)
+			$query = "SELECT *
+	    			  FROM ".$this::getTableName();
+		else
+			$query = "SELECT t.*, p.relname as tablename
+					  FROM ".$this::getTableName()." t, pg_class p
+					  WHERE t.tableoid = p.oid";
 
-		$firstLine = true;
 		foreach($this::getPrimaries() as $pk) {
-			if($firstLine) {
-				$query .= "\nWHERE ".$pk." = '".$id[$pk]."'";
-				$firstLine = false;
-			} else {
-				$query .= "\nAND ".$pk." = '".$id[$pk]."'";
-			}
+			$query .= "\n".(($fl) ? "WHERE" : "AND")." ".$pk." = '".$id[$pk]."'";
+			$fl = false;
 		}
 
 		$sth = $dbh->query($query);
@@ -179,72 +157,43 @@ abstract class Model implements ModelInterface {
 	}
 
 	/**
-	 *
-	 *
+	 * Attempt to retrieve array of item corresponding to the given conditions.
+	 * It's possible to return the tableName of each item.
 	 */
 	public function getByCols($tableName = false, array $ands = null, array $ors = null, array $orders = null, $limit = null, $offset = null) {
-
 		$dbh = App::getDatabase()->connect();
 
-		if(!$tableName) {
-			$query = "
-				SELECT *
-				FROM ".$this::getTableName();
-		} else {
-			$query = "
-				SELECT t.*, p.relname as tablename
-				FROM ".$this::getTableName()." t, pg_class p
-			";
-		}
-
-		$firstLine = (!is_null($ands))||(!is_null($ors));
-
-		if($tableName) {
-			$query .= "\nWHERE t.tableoid = p.oid";
-			$firstLine = false;
-		}
+		if($fl = !$tableName)
+			$query = "SELECT * FROM ".$this::getTableName();
+		else
+			$query = "SELECT t.*, p.relname as tablename
+					  FROM ".$this::getTableName()." t, pg_class p
+					  WHERE t.tableoid = p.oid";
 
 		if(!is_null($ands)) {
 			foreach($ands as $col => $and) {
-				if($firstLine) {
-					$query .= "\nWHERE ".$col." ".$and['operator']." '".$and['value']."'";
-					$firstLine = false;
-				} else {
-					$query .= "\nAND ".$col." ".$and['operator']." '".$and['value']."'";
-				}
+				$query .= "\n".(($fl) ? "WHERE" : "AND")." ".$col." ".$and['operator']." ".(($and['value'] === "null") ? $and['value'] : "'".$and['value']."'");
+				$fl = false;
 			}
 		}
 
 		if(!is_null($ors)) {
 			foreach($ors as $col => $or) {
-				if($firstLine) {
-					$query .= "\nWHERE ".$col." ".$or['operator']." '".$or['value']."'";
-					$firstLine = false;
-				} else {
-					$query .= "\nOR ".$col." ".$or['operator']." '".$or['value']."'";
-				}
+				$query .= "\n".(($fl) ? "WHERE" : "OR")." ".$col." ".$or['operator']." ".(($or['value'] === "null") ? $or['value'] : "'".$or['value']."'");
+				$fl = false;
 			}
 		}
 
-		if(!is_null($orders)) {
+		if($fl = !is_null($orders)) {
 			$query .= "\nORDER BY ";
-			$first = true;
 			foreach($orders as $col => $way) {
-				if($first) {
-					$query .= $col ." ". $way;
-					$first = false;
-				} else {
-					$query .= ", ".$col." ".$way;
-				}
+				$query .= (($fl) ? "" : ", ").$col ." ". $way;
+				$fl = false;
 			}
 		}
 
-		if(!is_null($limit))
-		$query .= "\nLIMIT ".$limit;
-
-		if(!is_null($offset))
-		$query .= "\nOFFSET ".$offset;
-
+		$query .= (!is_null($limit)) ? "\nLIMIT ".$limit : "";
+		$query .= (!is_null($offset)) ? "\nOFFSET ".$offset : "";
 
 		$sth = $dbh->query($query);
 
@@ -258,7 +207,6 @@ abstract class Model implements ModelInterface {
 		}
 
 		$dbh = null;
-
 		return $data;
 	}
 
@@ -270,38 +218,23 @@ abstract class Model implements ModelInterface {
 	public function store() {
 		$dbh = App::getDatabase()->connect();
 
-		$query = "
-			INSERT INTO ".$this->getTableName()."
-			VALUES (";
-		$first = true;
-		foreach ($this as $val) {
-			if($first) {
-				if(is_null($val))
-					$query .= "default";
-				else
-					$query .= "'".$val."'";
+		$query = "INSERT INTO ".$this->getTableName()."
+				  VALUES (";
 
-				$first = false;
-			} else {
-				if(is_null($val))
-					$query .= ", default";
-				else
-					$query .= ", '".$val."'";
-			}
+		$fl = true;
+		foreach ($this as $val) {
+			$query .= (($fl) ? "" : ", ").(($val == "" || is_null($val)) ? "default" : "'".$val."'");
+			$fl = false;
 		}
-		$query .= ")";
-		$query .= "\nRETURNING ";
-		$first = true;
+
+		$query .= ") \nRETURNING ";
+		$fl = true;
 		foreach($this->getPrimaries() as $pk) {
-			if($first) {
-				$query .= $pk;
-				$first = false;
-			} else
-				$query .= ", ".$pk;
+			$query .= ($fl) ? $pk : ", ".$pk;
+			$fl = false;
 		}
 
 		$sth = $dbh->query($query);
-
 		$data = $sth->fetch(\PDO::FETCH_ASSOC);
 
 		$dbh = null;
@@ -311,33 +244,26 @@ abstract class Model implements ModelInterface {
 	/**
 	 * Update the row corresponding to the current object in the database.
 	 * No integrity or constraint checks are done when updating the row.
-	 * @return number
 	 */
 	public function update() {
 		$dbh = App::getDatabase()->connect();
 
 		$query = "UPDATE ".$this->getTableName()."
-				SET ";
-		$first = true;
+				  SET ";
+
+		$fl = true;
 		foreach($this as $column => $val) {
 			if(!in_array($column, $this->getPrimaries())) {
-				if($first) {
-					$query .= (is_null($val)) ? $column." = null" : $column." = '".$val."'";
-					$first = false;
-				} else {
-					$query .= (is_null($val)) ? ", ".$column." = null" : ", ".$column." = '".$val."'";
-				}
+				$query .= (($fl) ? "" : ", ").$column." = ".((is_bool($val)) ? (($val) ? "TRUE" : "FALSE") : ((is_null($val) || $val == "") ? "null" : "'".$val."'"));
+				$fl = false;
 			}
 		}
-		$where = true;
+
+		$fl = true;
 		foreach($this as $column => $val) {
 			if(in_array($column, $this->getPrimaries())) {
-				if($where) {
-					$query .= "\nWHERE ".$column." = '".$val."'";
-					$where = false;
-				} else {
-					$query .= "\nAND ".$column." = '".$val."'";
-				}
+				$query .= "\n".(($fl) ? "WHERE" : "AND")." ".$column." = '".$val."'";
+				$fl = false;
 			}
 		}
 
@@ -348,22 +274,17 @@ abstract class Model implements ModelInterface {
 
 	/**
 	 * Delete the current element in the database represented by the object
-	 * @return number
 	 */
 	public function delete() {
 		$dbh = App::getDatabase()->connect();
 
-		$query = "
-			DELETE FROM ".$this->getTableName();
-		$where = true;
+		$query = "DELETE FROM ".$this->getTableName();
+
+		$fl = true;
 		foreach($this as $column => $val) {
 			if(in_array($column, $this->getPrimaries())) {
-				if($where) {
-					$query .= "\nWHERE ".$column." = '".$val."'";
-					$where = false;
-				} else {
-					$query .= "\nAND ".$column." = '".$val."'";
-				}
+				$query .= "\n".(($fl) ? "WHERE" : "AND")." ".$column." = '".$val."'";
+				$fl = false;
 			}
 		}
 
@@ -374,31 +295,22 @@ abstract class Model implements ModelInterface {
 
 	/**
 	 * Delete the element represented by the id in the database
-	 *
-	 * @param unknown $id
-	 * @return number
 	 */
 	public function deleteById(array $id) {
 		$dbh = App::getDatabase()->connect();
 
-		$query = "
-			DELETE FROM ".$this->getTableName();
+		$query = "DELETE FROM ".$this->getTableName();
 
-		$firstLine = true;
+		$fl = true;
 		foreach($this::getPrimaries() as $pk) {
-			if($firstLine) {
-				$query .= "\nWHERE ".$pk." = '".$id[$pk]."'";
-				$firstLine = false;
-			} else {
-				$query .= "\nAND ".$pk." = '".$id[$pk]."'";
-			}
+			$query .= "\n".(($fl) ? "WHERE" : "AND")." ".$pk." = '".$id[$pk]."'";
+			$fl = false;
 		}
 
 		$res = $dbh->exec($query);
 		$dbh = null;
 		return $res;
 	}
-
 
 	/**
 	 * Get the specified Item from the database and resolve all its dependencies
@@ -428,7 +340,6 @@ abstract class Model implements ModelInterface {
 		if($way === 0 || $way === -1) {
 			foreach($this::getCompositions() as $class => $id) {
 				$attrName = (substr($class, -1) === 's') ? lcfirst($class) : lcfirst($class."s");
-
 				$where = array(
 					$id => array()
 				);
@@ -442,26 +353,6 @@ abstract class Model implements ModelInterface {
 		}
 
 		return($this);
-	}
-
-
-	/**
-	 * Attempt to update the DataTree by updating all already existing objects
-	 * and storing all not already in the database.
-	 *
-	 * This methodes checks if primary keys exists to determine if object must be
-	 * inserted or updated
-	 */
-	public function saveDataTree() {
-
-	}
-
-	/**
-	 * Attempt to remove the whole DataTree from the database.
-	 * Use with care!!
-	 */
-	public function deleteDataTree() {
-
 	}
 
 }

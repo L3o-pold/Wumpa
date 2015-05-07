@@ -11,5 +11,7 @@ interface ModelInterface {
 
     public static function getPrimaries();
     public static function getTableName();
+    public static function getDependencies();
+    public static function getCompositions();
 
 }
