@@ -8,19 +8,19 @@ namespace Wumpa\Component\Exception\Exception;
  */
 class FileNotFoundException extends \Exception {
 
-	private $file;
+	private $fileNotFound;
 
-	public function __construct($file, $message = "File cannot be found", $code = null, $previous = null) {
-		$this->setFile($file);
+	public function __construct($fileNotFound, $message = "File cannot be found", $code = null, $previous = null) {
+		$this->setFileNotFound($fileNotFound);
 		parent::__construct($message, $code, $previous);
 	}
 
-	public function getFile() {
-		return $this->file;
+	public function getFileNotFound() {
+		return $this->fileNotFound;
 	}
-	
-	public function setFile($file) {
-		$this->file = $file;
+
+	public function setFileNotFound($fileNotFound) {
+		$this->fileNotFound = $fileNotFound;
 		return $this;
 	}
 

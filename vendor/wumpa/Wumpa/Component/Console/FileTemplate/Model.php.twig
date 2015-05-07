@@ -8,6 +8,10 @@ class {{ className }} extends Model {
 	public ${{ col }};
 {% endfor %}
 
+	public static function getTableName() {
+		return "{{ tableName }}";
+	}
+
 	public static function getPrimaries() {
 		return array(
 {% for pk in primaries %}
@@ -16,8 +20,28 @@ class {{ className }} extends Model {
 		);
 	}
 
-	public static function getTableName() {
-		return "{{ tableName }}";
+	public static function getDependencies() {
+{% if dependencies is empty %}
+		return null;
+{% else %}
+		return array(
+{% for dependency, targetClass in dependencies %}
+			"{{ dependency }}" => "{{ targetClass }}",
+{% endfor %}
+		);
+{% endif %}
+	}
+
+	public static function getCompositions() {
+{% if compositions is empty %}
+		return null;
+{% else %}
+		return array(
+{% for composition, fk in compositions %}
+			"{{ composition }}" => "{{ fk }}",
+{% endfor %}
+		);
+{% endif %}
 	}
 
 }
