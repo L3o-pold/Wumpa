@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Something went wrong...</title>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+</head>
+
+<body>
+
+	<div class="container">
+
+		<h1 class="page-header">Something went wrong...</h1>
+
+		<div class="row">
+			<div class="col-md-12">
+				<p class="well well-lg">
+					<span class="lead"><strong>{{ code }} - {{ message }}</strong></span><br>
+					{{ description|raw }}
+				</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<p>
+					<span class="lead text-danger"><strong>Exception thrown in:</strong></span><br>
+					<strong>{{ e.file }}</strong> at line <strong>{{ e.line }}</strong>.
+				</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<span class="lead"><strong>Stack trace:</strong></span>
+				<table class="table table-hover table-bordered">
+					<thead>
+						<tr class="active">
+							<th>#</th>
+							<th>File</th>
+							<th>Line</th>
+							<th>Function</th>
+							<th>Class</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for trace in e.trace %}
+						<tr>
+							<td>{{ loop.index }}</td>
+							<td><abbr title="{{ trace.file }}">{{ trace.file|length > 50 ? trace.file[0:20] ~ '...' ~  trace.file[trace.file|length-20:] : trace.file  }}</abbr></td>
+							<td>{{ trace.line }}</td>
+							<td>{{ trace.function }} <em>({{ trace.type }})</em></td>
+							<td>{{ trace.class }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+</html>
