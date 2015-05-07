@@ -17,6 +17,7 @@ use Wumpa\Component\FileSystem\File;
 class ModelSetup extends ComponentMom {
 
 	private $analyzer;
+	private $tables = array();
 
 	public function launch() {
 		$this->clear();
@@ -46,7 +47,7 @@ class ModelSetup extends ComponentMom {
 
 		echo "\nChecking if a database is set for the project... ";
 		if(is_null(App::getDatabase())) {
-			echo "\033[31;1mFAIL\O33[0m\n";
+			echo "\033[31;1mFAIL\033[0m\n";
 
 			do {
 				$start = strtolower(readline("Do you want to setup a database now? [Y/n] "));
@@ -102,25 +103,26 @@ class ModelSetup extends ComponentMom {
 		echo "\033[32;1mOK\033[0m\n";
 
 		echo "\nRetrieving tables...\n";
+		echo "Please enter a class name for each table found in the database (leave blank to use table name):\n\n";
+		$this->setTables(array());
 		foreach($tables = $this->getAnalyzer()->getTables() as $table) {
-			echo "  - ".$table."\n";
-		}
-
-		do {
-			$selectedTable = readline("\nEnter the name of the table you want generate model from: (0 to exit)\n");
-			if($selectedTable == "0")
-				continue;
-			if(!in_array($selectedTable, $tables)) {
-				echo "This table does not exist.\n";
-				continue;
+			if(($class = readline("  ".$table.": ")) === '') {
+				$this->addTable($table, $table);
+			} else {
+				$this->addTable($table, $class);
 			}
 
-			echo "\033[32;1mTable Found\033[0m\n";
-			$className = readline("Enter the name you want to give to the generated class:\n");
-			echo "Generating class ".$className.".php...";
-			$this->generateModel($selectedTable, $className);
+		}
+
+		echo "\n";
+
+		foreach($this->getTables() as $table => $class) {
+			echo "Generating class ".$class.".php from table ".$table."...";
+			$this->generateModel($table, $class);
 			echo " \033[32;1mDone\033[0m\n";
-		} while($selectedTable != "0");
+		}
+
+		echo "\n\033[32;1mModel generation done\033[0m\n";
 
 	}
 
@@ -132,10 +134,32 @@ class ModelSetup extends ComponentMom {
 		$data["tableName"] = $tableName;
 		$data["columns"] = $this->getAnalyzer()->getCols($tableName);
 		$data["primaries"] = $this->getAnalyzer()->getPK($tableName);
+		$data["dependencies"] = $this->findDependencies($tableName);
+		$data["compositions"] = $this->findCompositions($tableName);
 		$model = new File(App::get()->getModelDir().$className.".php");
 		$model->open();
 		fwrite($model->getResource(), $renderer->render("Model.php.twig", $data));
 		$model->close();
+	}
+
+	private function findCompositions($tableName) {
+		$compositions = array();
+		foreach($this->getAnalyzer()->getTables() as $table) {
+			foreach($this->getAnalyzer()->getFK($table) as $fk => $targetTable) {
+				if($targetTable === $tableName) {
+					$compositions[$this->getTables()[$table]] = $fk;
+				}
+			}
+		}
+		return $compositions;
+	}
+
+	private function findDependencies($tableName) {
+		$dependencies = array();
+		foreach($this->getAnalyzer()->getFK($tableName) as $fk => $table) {
+			$dependencies[$fk] = $this->getTables()[$table];
+		}
+		return $dependencies;
 	}
 
 	public function getAnalyzer() {
@@ -145,6 +169,19 @@ class ModelSetup extends ComponentMom {
 	public function setAnalyzer($analyzer) {
 		$this->analyzer = $analyzer;
 		return $this;
+	}
+
+	public function getTables() {
+		return $this->tables;
+	}
+
+	public function setTables($tables) {
+		$this->tables = $tables;
+		return $this;
+	}
+
+	public function addTable($tableName, $className) {
+		$this->tables[$tableName] = $className;
 	}
 
 }

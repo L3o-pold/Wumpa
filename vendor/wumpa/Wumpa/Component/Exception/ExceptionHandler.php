@@ -78,7 +78,7 @@ class ExceptionHandler {
 		if($e instanceof DirectoryNotFoundException) {
 			$data["description"] = "The following directory could not be found on server: <em><b>" .$e->getDirectory(). "</b></em>.";
 		} else if($e instanceof FileNotFoundException) {
-			$data["description"] = "The following file could not be found on server: <em><b>" .$e->getFile(). "</b></em>.";
+			$data["description"] = "The following file could not be found on server: <em><b>" .$e->getFileNotFound(). "</b></em>.";
 		} else if($e instanceof IllegalMethodCall) {
 			$data["description"] = "The following Methode: <em><b>" .$e->getMethod(). "</b></em> in class <em><b>" .$e->getClass(). "</b></em> cannot be called.";
 		} else if($e instanceof InvalidArgumentException) {
