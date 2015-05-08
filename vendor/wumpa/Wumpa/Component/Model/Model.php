@@ -223,7 +223,7 @@ abstract class Model implements ModelInterface {
 
 		$fl = true;
 		foreach ($this as $val) {
-			$query .= (($fl) ? "" : ", ").(($val == "" || is_null($val)) ? "default" : "'".$val."'");
+			$query .= (($fl) ? "" : ", ").((is_null($val) || $val === "") ? "default" : "'".$val."'");
 			$fl = false;
 		}
 
@@ -254,7 +254,7 @@ abstract class Model implements ModelInterface {
 		$fl = true;
 		foreach($this as $column => $val) {
 			if(!in_array($column, $this->getPrimaries())) {
-				$query .= (($fl) ? "" : ", ").$column." = ".((is_bool($val)) ? (($val) ? "TRUE" : "FALSE") : ((is_null($val) || $val == "") ? "null" : "'".$val."'"));
+				$query .= (($fl) ? "" : ", ").$column." = ".((is_bool($val)) ? (($val) ? "TRUE" : "FALSE") : ((is_null($val) || $val === "") ? "null" : "'".$val."'"));
 				$fl = false;
 			}
 		}
