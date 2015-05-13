@@ -30,7 +30,7 @@ class ExceptionHandler {
 
 	public function handle($e) {
 		\Twig_Autoloader::register();
-		$loader = new \Twig_Loader_Filesystem(__DIR__."/templates/");
+		$loader = new \Twig_Loader_Filesystem(__DIR__."/Templates/");
 		$twig = new \Twig_Environment($loader);
 
 		$data = array(
