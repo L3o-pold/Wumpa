@@ -5,7 +5,7 @@ namespace Wumpa\Component\Controller;
 use Wumpa\Component\App\App;
 
 /**
- * Provide feature for user controllers. It use Twig to render view.
+ * Provide features for user controllers. It use Twig to render view.
  *
  * @author Bastien de Luca <dev@de-luca.io>
  */
@@ -13,17 +13,18 @@ class Controller {
 
 	private $templateDir;
 	private $url;
+	private $twig;
 
 	public function render($template, $data = array()) {
 		$data['_url'] = $this->getUrl();
-		$loader = new \Twig_Loader_Filesystem($this->getTemplateDir());
-		$twig = new \Twig_Environment($loader);
-		echo $twig->render($template, $data);
+		echo $this->getTwig()->render($template, $data);
 	}
 
 	public function __construct() {
 		$this->setTemplateDir(App::get()->getTemplatesDir());
 		$this->setUrl(App::get()->getUrl());
+		$loader = new \Twig_Loader_Filesystem($this->getTemplateDir());
+		$this->setTwig(new \Twig_Environment($loader));
 	}
 
 	public function getTemplateDir() {
@@ -41,6 +42,15 @@ class Controller {
 
 	public function setUrl($url) {
 		$this->url = $url;
+		return $this;
+	}
+
+	public function getTwig() {
+		return $this->twig;
+	}
+
+	public function setTwig($twig) {
+		$this->twig = $twig;
 		return $this;
 	}
 
