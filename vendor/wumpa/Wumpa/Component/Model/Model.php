@@ -323,7 +323,7 @@ abstract class Model implements ModelInterface {
 	public function getDataTree(array $id, $way = 0) {
 		$this->getById($id);
 
-		if($way === 0 || $way === 1) {
+		if(($way === 0||$way === 1)&&(!is_null($this::getDependencies()))) {
 			foreach($this as $attrib => $value) {
 				foreach($this::getDependencies() as $key => $class) {
 					if($attrib === $key && !is_null($this->$attrib)) {
@@ -337,7 +337,7 @@ abstract class Model implements ModelInterface {
 			}
 		}
 
-		if($way === 0 || $way === -1) {
+		if(($way === 0||$way === -1)&&(!is_null($this::getCompositions()))) {
 			foreach($this::getCompositions() as $class => $id) {
 				$attrName = (substr($class, -1) === 's') ? lcfirst($class) : lcfirst($class."s");
 				$where = array(
