@@ -13,15 +13,19 @@ class Request {
 	private $nodes = array();
 
 	public function __construct() {
-		$this->setUrl($_SERVER['REQUEST_URI']);
+		$requestURI = $_SERVER['REQUEST_URI'];
+		$this->setUrl($requestURI);
 
-		$requestURI = explode('/', $_SERVER['REQUEST_URI']);
+		if(!!$posGet = strpos($requestURI, '?'))
+			$requestURI = substr_replace($requestURI, '', $posGet);
+		$requestURI = rtrim($requestURI, '/');
+
+		$requestURI = explode('/', $requestURI);
 		$scriptName = explode('/', $_SERVER['SCRIPT_NAME']);
 
-		for($i=0; $i<sizeof($scriptName) && $requestURI[$i] == $scriptName[$i]; $i++);
+		for($i=0; $i<sizeof($scriptName) && isset($requestURI[$i])  && $requestURI[$i] == $scriptName[$i] ; $i++);
 
-		$nodes = array_values(array_slice($requestURI,$i));
-
+		$nodes = (empty(array_values(array_slice($requestURI,$i))) ? array('') : array_slice($requestURI,$i));
 		$this->setNodes($nodes);
 	}
 
