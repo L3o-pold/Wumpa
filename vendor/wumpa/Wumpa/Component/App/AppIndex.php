@@ -13,7 +13,7 @@ use Wumpa\Component\Exception\Exception\ConfigErrorException;
  */
 class AppIndex extends AppMom {
 
-    private $url;
+    private $baseUrl;
     private $handleExcp;
 
     private $autoloader;
@@ -25,7 +25,7 @@ class AppIndex extends AppMom {
         $this->getRouter()->dispatch();
     }
 
-    private function retrieveUrl() {
+    private function retrieveBaseUrl() {
         $requestURI = explode('/', $_SERVER['REQUEST_URI']);
         $scriptName = explode('/', $_SERVER['SCRIPT_NAME']);
 
@@ -54,7 +54,7 @@ class AppIndex extends AppMom {
         $configDir = $indexDir."config/";
         $sysConfig = require $configDir."system.php";
 
-        $this->setUrl($this->retrieveUrl());
+        $this->setBaseUrl($this->retrieveBaseUrl());
 
         if(!isset($sysConfig['wumpa_exception_handler'])) {
             $this->setHandleExcp(false);
@@ -66,12 +66,12 @@ class AppIndex extends AppMom {
         }
     }
 
-    public function getUrl() {
-        return $this->url;
+    public function getBaseUrl() {
+        return $this->baseUrl;
     }
 
-    public function setUrl($url) {
-        $this->url = $url;
+    public function setBaseUrl($baseUrl) {
+        $this->baseUrl = $baseUrl;
         return $this;
     }
 

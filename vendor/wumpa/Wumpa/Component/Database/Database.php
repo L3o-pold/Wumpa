@@ -20,16 +20,20 @@ class Database {
 	private $user;
 	private $password;
 
+	private $dbh;
+
 	private $app;
 
 	public function connect() {
-		$dbh = new \PDO($this->getConnectionString(), $this->getUser(), $this->getPassword());
-		$dbh->exec('SET CHARACTER SET utf8');
+		if(($dbh = $this->getDbh()) === null) {
+			$dbh = new \PDO($this->getConnectionString(), $this->getUser(), $this->getPassword());
+			$dbh->exec('SET CHARACTER SET utf8');
 
-		if(($this->app instanceof AppIndex) && $this->getApp()->isHandlingExcp()) {
-			$dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+			if(($this->app instanceof AppIndex) && $this->getApp()->isHandlingExcp()) {
+				$dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+			}
+			$this->setDbh($dbh);
 		}
-
 		return $dbh;
 	}
 
@@ -114,6 +118,14 @@ class Database {
 	public function setPassword($password) {
 		$this->password = $password;
 		return $this;
+	}
+
+	private function getDbh() {
+		return $this->dbh;
+	}
+
+	private function setDbh($dbh) {
+		$this->dbh = $dbh;
 	}
 
 	public function getApp() {

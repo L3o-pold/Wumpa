@@ -75,7 +75,7 @@ class ExceptionHandler {
 		} else if($e instanceof MethodNotFoundException) {
 			$data["description"] = "The following Methode: <em><b>" .$e->getMethod(). "</b></em> could not be found in class <em><b>" .$e->getClass(). "</b></em>.";
 		} else if($e instanceof RoutingException) {
-			$data["description"] = "The following URL could not be found: <em><b>" .$_SERVER['HTTP_HOST'].$e->getRequest()->getURL(). "</b></em>.";
+			$data["description"] = "The following URL could not be found: <em><b>" .$_SERVER['HTTP_HOST'].$e->getRequest()->getUri(). "</b></em>.";
 		}
 
 		echo $twig->render("exceptionTemplate.html.twig", $data);

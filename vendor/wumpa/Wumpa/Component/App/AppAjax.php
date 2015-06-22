@@ -14,7 +14,7 @@ use Wumpa\Component\Exception\Exception\DirectoryNotFoundException;
  */
 class AppAjax extends AppMom {
 
-    private $url;
+    private $baseUrl;
 
     private $autoloader;
     private $router;
@@ -25,7 +25,7 @@ class AppAjax extends AppMom {
     }
 
     // TODO: Change to get common part in url
-    private function retrieveUrl() {
+    private function retrieveBaseUrl() {
         $requestURI = explode('/', $_SERVER['REQUEST_URI']);
         $scriptName = explode('/', $_SERVER['SCRIPT_NAME']);
 
@@ -54,15 +54,15 @@ class AppAjax extends AppMom {
         $configDir = $indexDir."config/";
         $sysConfig = require $configDir."system.php";
 
-        $this->setUrl($this->retrieveUrl());
+        $this->setBaseUrl($this->retrieveBaseUrl());
     }
 
-    public function getUrl() {
-        return $this->url;
+    public function getBaseUrl() {
+        return $this->baseUrl;
     }
 
-    public function setUrl($url) {
-        $this->url = $url;
+    public function setBaseUrl($url) {
+        $this->baseUrl = $url;
         return $this;
     }
 

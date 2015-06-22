@@ -44,10 +44,12 @@ class Router {
 
 		foreach($routingTable as $route) {
 
-			if($route->getPath() == "/")
+			$path = ($route->getPath() == "/") ? array("") : explode('/', $route->getPath());
+
+			/*if($route->getPath() == "/")
 				$path = array("");
 			else
-				$path = explode('/', $route->getPath());
+				$path = explode('/', $route->getPath());*/
 
 			if(sizeof($path) == sizeof($request)) {
 
@@ -145,7 +147,7 @@ class Router {
 
 				$parts = explode("/", $route->getPath());
 				$first = 0;
-				$genUrl = $_SERVER['HTTP_HOST'].$this->getApp()->getUrl();
+				$genUrl = $this->getRequest()->getHost().$this->getApp()->getBaseUrl();
 
 				if($route->getPath() == "/") {
 					return "http://".$genUrl;
