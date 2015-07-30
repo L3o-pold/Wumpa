@@ -1,34 +1,9 @@
+#!/usr/bin/env php
 <?php
+define('ROOT', __DIR__ . '/..');
+require ROOT . '/vendor/autoload.php';
 
 use Wumpa\Component\Console\Console;
 
-include_once __DIR__ . "/../vendor/autoload.php";
-
-$console = new Console();
-
-if(isset($argv[1])) {
-	switch ($argv[1]) {
-		case "-help":
-			$console->displayHelp();
-			break;
-		case "-new":
-			$console->setComponent(Console::COMPO_NEW);
-			$console->launch();
-			break;
-		case "-db":
-			$console->setComponent(Console::COMPO_DB);
-			$console->launch();
-			break;
-		case "-model":
-			$console->setComponent(Console::COMPO_MODEL);
-			$console->launch();
-			break;
-		default:
-			$console->displayArgsError($argv[1]);
-			break;
-	}
-} else {
-	$console->displayNoArgs();
-}
-
-echo "\n";
+$application = new Console('Wumpa console', '0.1');
+$application->run();
