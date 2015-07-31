@@ -2,51 +2,60 @@
 
 namespace Wumpa\Component\Console\Command;
 
+use RuntimeException;
+use Wumpa\Component\FileSystem\File;
+use Wumpa\Component\Renderer\Renderer;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Wumpa\Component\FileSystem\File;
-use Wumpa\Component\Renderer\Renderer;
-
 
 /**
- * @package projectSetup
- * @author  Léopold Jacquot
+ * Create a new Wumpa project command
+ *
+ * @author Léopold Jacquot <leopold.jacquot@gmail.com>
+ * @author Bastien de Luca <dev@de-luca.io>
  */
-class projectSetup extends wumpaCommand {
+class ProjectSetup extends WumpaCommand {
 
     protected function configure() {
         $this->setName('new')
              ->setDescription('Create a new project with Wumpa framework');
+
+        parent::configure();
     }
 
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
+     *
+     * @return int|null|void
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
         parent::execute($input, $output);
 
-        $this->getOutput()->writeln('<comment>Wumpa project Generator started...</comment>');
-        $this->getOutput()->writeln('<comment>This will generate a new project in desired directory.</comment>');
+        $this->getOutput()
+             ->writeln('<comment>Wumpa project Generator started...</comment>');
+        $this->getOutput()
+             ->writeln('<comment>This will generate a new project in desired directory.</comment>');
 
         $this->createProjectFolder();
         $this->generateFiles();
 
         $this->getOutput()->writeln('<info>Project generation is done!</info>');
 
-        $question = new ConfirmationQuestion(
-            'Do you want to setup a database now? [Y/n] ',
-            false
-        );
+        $question =
+            new ConfirmationQuestion('Do you want to setup a database now? [Y/n] ',
+                true);
 
-        if ($this->questionHelper->ask($this->input, $this->output, $question)) {
+        if ($this->questionHelper->ask($this->input, $this->output,
+            $question)
+        ) {
             $command = $this->getApplication()->find('db');
 
             $arguments = [
                 'command' => 'db',
-                'project_path' => $this->project_path
+                'path' => $this->getProjectPath()
             ];
 
             $command->run(new ArrayInput($arguments), $this->output);
@@ -54,43 +63,47 @@ class projectSetup extends wumpaCommand {
     }
 
     /**
-     * @param $input
-     * @param $output
-     *
-     * @throws \Exception
-     * @return bool True if project structure is created
+     * @return bool
+     * @internal param $input
+     * @internal param $output
      */
     private function createProjectFolder() {
-        $this->project_path = $this->askProjectPath();
 
-        if (substr($this->project_path, -1) != '/') {
-            $this->project_path .= '/';
+        if ($this->getInput()->getArgument('path')) {
+            $this->setProjectPath($this->getInput()->getArgument('path'));
+        }
+        else {
+            $this->setProjectPath($this->askProjectPath());
         }
 
-        $arr_path = ['config', 'controller', 'model', 'view', 'view/templates'];
+        $paths = [
+            'config',
+            'controller',
+            'model',
+            'view',
+            'view/templates'
+        ];
 
-        if (is_dir($this->getProjectPath()) === false) {
-            if (is_writable($this->getProjectPath()) === false) {
-                throw new \Exception('The project structure cannot be created because the destinaton folder '
-                                     . $this->getProjectPath() . ' is not writable');
-            } else {
-                mkdir($this->getProjectPath());
-            }
-        } else {
-            throw new \Exception('The project structure cannot be created because the destinaton folder '
-                                 . $this->getProjectPath() . ' already exists');
+        if (is_dir($this->getProjectPath()) === false
+            && (!mkdir($this->getProjectPath())
+                || !is_writable($this->getProjectPath())
+            )
+        ) {
+                throw new RuntimeException(
+                    'The project structure cannot be created because the destinaton folder '
+                    . $this->getProjectPath() . ' is not writable'
+                );
         }
 
-        foreach ($arr_path as $str_path) {
-            if (mkdir($this->getProjectPath() . $str_path) === false) {
-                throw new \Exception('Project structure cannot be created');
+        foreach ($paths as $path) {
+            if (mkdir($this->getProjectPath() . $path) === false) {
+                throw new RuntimeException('Project structure cannot be created');
             }
-        } return true;
+        }
+
+        return true;
     }
 
-    /**
-     *
-     */
     private function generateFiles() {
         $renderer = new Renderer(__DIR__ . '/../FileTemplate');
         //INDEX
@@ -108,11 +121,10 @@ class projectSetup extends wumpaCommand {
         $htaccess->close();
 
         //DATABASE CONFIG
-        $db = new File($this->getProjectPath() . 'config/database.php');
-        $db->open();
-        fwrite($db->getResource(),
-            $renderer->render('database.php.twig', []));
-        $db->close();
+        $database = new File($this->getProjectPath() . 'config/database.php');
+        $database->open();
+        fwrite($database->getResource(), $renderer->render('database.php.twig', []));
+        $database->close();
 
         //ROUTES CONFIG
         $routes = new File($this->getProjectPath() . 'config/routes.php');

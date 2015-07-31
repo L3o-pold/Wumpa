@@ -9,7 +9,8 @@ use Wumpa\Component\Console\Command\projectSetup;
 
 
 /**
- * @author Bastien de Luca <dev@de-luca.io>
+ * Container for a collection of Wumpa commands
+ *
  * @author Léopold Jacquot <leopold.jacquot@gmail.com>
  */
 class Console extends Application {
@@ -22,9 +23,9 @@ class Console extends Application {
     protected function getDefaultCommands() {
         $defaultCommands = parent::getDefaultCommands();
 
-        $defaultCommands[] = new projectSetup();
-        $defaultCommands[] = new dbSetup();
-        $defaultCommands[] = new modelSetup();
+        $defaultCommands[] = new ProjectSetup();
+        $defaultCommands[] = new DbSetup();
+        $defaultCommands[] = new ModelSetup();
 
         return $defaultCommands;
     }

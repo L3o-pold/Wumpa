@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-define('ROOT', __DIR__ . '/..');
+define('ROOT', realpath(__DIR__ . '/..'));
 require ROOT . '/vendor/autoload.php';
 
 use Wumpa\Component\Console\Console;

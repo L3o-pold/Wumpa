@@ -10,7 +10,5 @@ vendor/swiftmailer
 vendor/composer
 vendor/autoload.php
 
-# Eclipse generated files/folders
-.buildpath
-.project
-.settings
+# PHPStorm project
+.idea

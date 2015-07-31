@@ -2,52 +2,59 @@
 
 namespace Wumpa\Component\Console\Command;
 
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\Question;
+use RuntimeException;
+use Wumpa\Component\App\AppFactory;
+use Wumpa\Component\App\App;
 use Wumpa\Component\FileSystem\File;
 use Wumpa\Component\Renderer\Renderer;
-use Wumpa\Component\App\App;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
- * @package dbSetup
- * @author  Léopold Jacquot
+ * Setup a database command
+ *
+ * @author Léopold Jacquot <leopold.jacquot@gmail.com>
+ * @author Bastien de Luca <dev@de-luca.io>
  */
-class dbSetup extends wumpaCommand {
+class DbSetup extends WumpaCommand {
 
     /**
      * @var array
      */
-    private $database_infos = [];
+    private $databaseInfos = [];
 
     /**
      *
      */
     protected function configure() {
         $this->setName('db')
-             ->setDescription('Configure Database for Wumpa framework')
-             ->addArgument('project_path', InputArgument::OPTIONAL,
-                 'Project path (absolute path)');
+             ->setDescription('Configure Database for Wumpa framework');
+
+        parent::configure();
     }
 
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
+     *
+     * @return int|null|void
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
         parent::execute($input, $output);
 
-        $this->getOutput()->writeln('<comment>Wumpa Database Setup started...</comment>');
-        $this->getOutput()->writeln('<comment>This will setup your database connection for you.</comment>');
+        $this->getOutput()
+             ->writeln('<comment>Wumpa Database Setup started...</comment>');
+        $this->getOutput()
+             ->writeln('<comment>This will setup your database connection for you.</comment>');
 
-        if ($this->getInput()->getArgument('project_path')) {
-            $this->project_path = $this->getInput()->getArgument('project_path');
+        if ($this->getInput()->getArgument('path')) {
+            $this->setProjectPath($this->getInput()->getArgument('path'));
         }
         else {
-            $this->project_path = $this->askProjectPath();
+            $this->setProjectPath($this->askProjectPath());
         }
 
         $this->askDatabaseInformation();
@@ -56,9 +63,13 @@ class dbSetup extends wumpaCommand {
         $output->writeln('<info>Database configuration is now done!</info>');
 
         $question =
-            new ConfirmationQuestion('Do you want to test database connectivity? [Y/n] ', true);
+            new ConfirmationQuestion('Do you want to test database connectivity? [Y/n] ',
+                true);
 
-        if ($this->getQuestionHelper()->ask($this->getInput(), $this->getOutput(), $question)) {
+        if ($this->getQuestionHelper()
+                 ->ask($this->getInput(), $this->getOutput(), $question)
+        ) {
+            App::init($this->getProjectPath(), Appfactory::APP_TERM);
             $this->checkDatabaseConnexion();
         }
     }
@@ -67,7 +78,7 @@ class dbSetup extends wumpaCommand {
      * @return array
      */
     public function getDatabaseInfos() {
-        return $this->database_infos;
+        return $this->databaseInfos;
     }
 
     /**
@@ -82,16 +93,14 @@ class dbSetup extends wumpaCommand {
 
         $question->setErrorMessage('Database driver %s is invalid.');
 
-        return strtolower($this->getQuestionHelper()->ask($this->getInput(),
-            $this->getOutput(), $question));
+        return strtolower($this->getQuestionHelper()
+                               ->ask($this->getInput(), $this->getOutput(),
+                                   $question));
     }
 
-    /**
-     *
-     */
     private function askDatabaseInformation() {
 
-        $arr_infos = [
+        $databaseInfos = [
             'dbName' => 'database name',
             'host' => 'database hostname',
             'port' => 'database port',
@@ -99,36 +108,38 @@ class dbSetup extends wumpaCommand {
             'password' => 'database password'
         ];
 
-        $this->database_infos['driver'] = $this->askDatabaseDriver();
+        $this->databaseInfos['driver'] = $this->askDatabaseDriver();
 
-        foreach ($arr_infos as $str_key => $str_info) {
-            $question = new Question('Enter the ' . $str_info . ' ');
+        foreach ($databaseInfos as $key => $info) {
+            $question = new Question('Enter the ' . $info . ' ');
 
-            $question->setValidator(function ($answer) use (&$str_info) {
+            $question->setValidator(function ($answer) use (&$info) {
                 if (empty(trim($answer)) === true) {
-                    throw new \RuntimeException($str_info . ' cannot be empty');
+                    throw new RuntimeException($info . ' cannot be empty');
                 }
 
                 return $answer;
             });
 
-            $this->database_infos[$str_key] =
-                $this->getQuestionHelper()->ask($this->getInput(), $this->getOutput(),
-                    $question);
+            $this->databaseInfos[$key] = $this->getQuestionHelper()
+                                                   ->ask($this->getInput(),
+                                                       $this->getOutput(),
+                                                       $question);
         }
     }
 
-    /**
-     *
-     */
     private function generateDatabaseConfigurationFile() {
         $renderer = new Renderer(__DIR__ . '/../FileTemplate');
 
         $file = new File($this->getProjectPath() . 'config/database.php');
         $file->open();
-        fwrite($resource = $file->getResource(),
-            $renderer->render('database.php.twig',
-                ['db' => $this->getDatabaseInfos()]));
+        fwrite(
+            $file->getResource(),
+            $renderer->render(
+                'database.php.twig',
+                ['db' => $this->getDatabaseInfos()]
+            )
+        );
 
         $file->close();
     }

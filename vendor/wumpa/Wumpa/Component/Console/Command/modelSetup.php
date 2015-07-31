@@ -2,23 +2,25 @@
 
 namespace Wumpa\Component\Console\Command;
 
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\Console\Question\Question;
+use RuntimeException;
 use Wumpa\Component\App\App;
 use Wumpa\Component\App\AppFactory;
 use Wumpa\Component\Database\Analyzer\PgAnalyzer;
 use Wumpa\Component\FileSystem\File;
 use Wumpa\Component\Renderer\Renderer;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
- * @package modelSetup
- * @author  Léopold Jacquot
+ * Model generator command
+ *
+ * @author Léopold Jacquot <leopold.jacquot@gmail.com>
+ * @author Bastien de Luca <dev@de-luca.io>
  */
-class modelSetup extends wumpaCommand {
+class ModelSetup extends WumpaCommand {
 
     /**
      * @var null|PgAnalyzer
@@ -32,63 +34,65 @@ class modelSetup extends wumpaCommand {
 
     protected function configure() {
         $this->setName('model')
-             ->setDescription('Create a model for Wumpa framework')
-             ->addArgument('project_path', InputArgument::OPTIONAL,
-                 'Project path (absolute path)');
+             ->setDescription('Create a model for Wumpa framework');
+
+        parent::configure();
     }
 
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
+     * @return int 0 if everything went fine, or an error code
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
         parent::execute($input, $output);
-        $bool_database_connexion = false;
 
-        $this->getOutput()->writeln('<comment>Wumpa Model Generator started...</comment>');
-        $this->getOutput()->writeln('<comment>This tool will generate model classes from your database structure.</comment>');
-        $this->getOutput()->writeln('<comment>A configured database is required.</comment>');
+        $this->getOutput()
+             ->writeln('<comment>Wumpa Model Generator started...</comment>');
+        $this->getOutput()
+             ->writeln('<comment>This tool will generate model classes from your database structure.</comment>');
+        $this->getOutput()
+             ->writeln('<comment>A configured database is required.</comment>');
 
-        if ($this->getInput()->getArgument('project_path')) {
-            $this->project_path = $this->getInput()->getArgument('project_path');
+        if ($this->getInput()->getArgument('path')) {
+            $this->setProjectPath($this->getInput()->getArgument('path'));
         }
         else {
-            $this->project_path = $this->askProjectPath();
+            $this->setProjectPath($this->askProjectPath());
         }
 
         App::init($this->getProjectPath(), Appfactory::APP_TERM);
 
-        while ($bool_database_connexion === false) {
+        if (is_null(App::getDatabase())) {
+            $question =
+                new ConfirmationQuestion('Do you want to setup a database now? [Y/n] ',
+                    true);
 
-            while (is_null(App::getDatabase())) {
-                $question =
-                    new ConfirmationQuestion('Do you want to setup a database now? [Y/n] ',
-                        true);
+            if ($this->getQuestionHelper()
+                     ->ask($this->getInput(), $this->getOutput(), $question)
+            ) {
+                $command = $this->getApplication()->find('db');
 
-                if ($this->getQuestionHelper()->ask($this->getInput(), $this->getOutput(),
-                    $question)
-                ) {
-                    $command = $this->getApplication()->find('db');
+                $arguments = [
+                    'command' => 'db',
+                    'path' => $this->getProjectPath()
+                ];
 
-                    $arguments = [
-                        'command' => 'db',
-                        'project_path' => $this->getProjectPath()
-                    ];
-
-                    $command->run(new ArrayInput($arguments), $this->getOutput());
-                }
-                else {
-                    $this->getOutput()->writeln('<error>A database connexion is required...</error>');
-                    exit;
-                }
+                $command->run(new ArrayInput($arguments), $this->getOutput());
+            } else {
+                $this->getOutput()
+                     ->writeln('<error>A database connexion is required...</error>');
+                return -1;
             }
-
-            $this->checkDatabaseConnexion();
         }
+
+        $this->checkDatabaseConnexion();
 
         $this->generateModels();
 
         $this->getOutput()->writeln('<info>Model generation is done!</info>');
+
+        return 0;
     }
 
     private function generateModels() {
@@ -97,18 +101,18 @@ class modelSetup extends wumpaCommand {
                 $this->setAnalyzer(new PgAnalyzer());
                 break;
             default:
-                $this->getOutput()->writeln('<error>Only PostgreSQL is supported for now..</error>');
-                exit;
+                throw new RuntimeException('Only PostgreSQL is supported for now');
         }
 
         $this->setTables([]);
 
-        foreach ($tables = $this->getAnalyzer()->getTables() as $table) {
+        foreach ($this->getAnalyzer()->getTables() as $table) {
             $question =
                 new Question('Class name for ' . $table . ' table [' . $table
                              . '] ', $table);
-            $class    =
-                $this->getQuestionHelper()->ask($this->getInput(), $this->getOutput(), $question);
+            $class    = $this->getQuestionHelper()
+                             ->ask($this->getInput(), $this->getOutput(),
+                                 $question);
 
             $this->addTable($table, $class);
         }
